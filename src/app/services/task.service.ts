@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { Task, TaskHistory } from '../models/task.model';
+import { Task, TaskHistory, TaskStatus } from '../models/task.model';
 import { Reward } from '../models/reward.model';
 
 @Injectable({
@@ -41,6 +41,7 @@ export class TaskService {
             ...taskData,
             moneyPerCompletion: 10,
             history: [],
+            status: 'ACTIVE',
             createdAt: new Date(),
             updatedAt: new Date()
         };
@@ -52,7 +53,7 @@ export class TaskService {
 
     updateTask(id: number, taskData: Partial<Task>): Observable<Task | undefined> {
         const index = this.tasks.findIndex(task => task.id === id);
-        if (index !== -1) {
+        if (index !== -1 && this.tasks[index].status === 'ACTIVE') {
             this.tasks[index] = {
                 ...this.tasks[index],
                 ...taskData,
@@ -76,14 +77,26 @@ export class TaskService {
 
     completeTask(id: number): Observable<Task | undefined> {
         const task = this.tasks.find(t => t.id === id);
-        if (task) {
+        if (task && task.status === 'ACTIVE') {
             const completion: TaskHistory = {
                 completionDate: new Date(),
                 earnedMoney: task.moneyPerCompletion
             };
             task.history.push(completion);
+            task.status = 'COMPLETED';
             this.totalMoney += task.moneyPerCompletion;
             this.totalMoneySubject.next(this.totalMoney);
+            this.tasksSubject.next([...this.tasks]);
+            return of(task);
+        }
+        return of(undefined);
+    }
+
+    reopenTask(id: number): Observable<Task | undefined> {
+        const task = this.tasks.find(t => t.id === id);
+        if (task && task.status === 'COMPLETED') {
+            task.status = 'ACTIVE';
+            task.updatedAt = new Date();
             this.tasksSubject.next([...this.tasks]);
             return of(task);
         }

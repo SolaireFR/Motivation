@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TaskListComponent } from './components/task-list/task-list.component';
 import { TaskService } from './services/task.service';
-import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
@@ -11,6 +10,8 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { Reward } from './models/reward.model';
+import { ButtonComponent } from './shared/components/button.component';
+import { Icons, ButtonTexts } from './shared/ui-constants';
 
 @Component({
     selector: 'app-root',
@@ -19,12 +20,12 @@ import { Reward } from './models/reward.model';
         CommonModule,
         FormsModule,
         TaskListComponent,
-        ButtonModule,
         DialogModule,
         InputNumberModule,
         InputTextModule,
         ConfirmDialogModule,
-        ToastModule
+        ToastModule,
+        ButtonComponent
     ],
     providers: [ConfirmationService, MessageService],
     template: `
@@ -38,8 +39,17 @@ import { Reward } from './models/reward.model';
                     <h2 class="text-2xl mb-3">Cagnotte Totale</h2>
                     <div class="total-amount mb-3" [ngClass]="{'negative': totalMoney < 0}">{{totalMoney}}€</div>
                     <div class="money-actions mb-4">
-                        <p-button icon="pi pi-pencil" (onClick)="showMoneyDialog()" class="mr-2" label="Modifier"></p-button>
-                        <p-button icon="pi pi-gift" (onClick)="showRewardDialog()" severity="success" label="Récompense"></p-button>
+                        <app-button
+                            [icon]="icons.edit"
+                            [label]="texts.edit"
+                            (onClick)="showMoneyDialog()"
+                        ></app-button>
+                        <app-button
+                            [icon]="icons.gift"
+                            [label]="texts.reward"
+                            type="success"
+                            (onClick)="showRewardDialog()"
+                        ></app-button>
                     </div>
                     <div class="rewards-history" *ngIf="rewards.length > 0">
                         <h3 class="text-lg mb-2">Historique des récompenses</h3>
@@ -66,8 +76,18 @@ import { Reward } from './models/reward.model';
                 </div>
             </div>
             <ng-template pTemplate="footer">
-                <button pButton pRipple label="Annuler" icon="pi pi-times" class="p-button-text" (click)="hideMoneyDialog()"></button>
-                <button pButton pRipple label="Sauvegarder" icon="pi pi-check" class="p-button-text" (click)="updateMoney()"></button>
+                <app-button
+                    [icon]="icons.cancel"
+                    [label]="texts.cancel"
+                    type="secondary"
+                    (onClick)="hideMoneyDialog()"
+                ></app-button>
+                <app-button
+                    [icon]="icons.save"
+                    [label]="texts.save"
+                    type="success"
+                    (onClick)="updateMoney()"
+                ></app-button>
             </ng-template>
         </p-dialog>
 
@@ -83,8 +103,18 @@ import { Reward } from './models/reward.model';
                 </div>
             </div>
             <ng-template pTemplate="footer">
-                <button pButton pRipple label="Annuler" icon="pi pi-times" class="p-button-text" (click)="hideRewardDialog()"></button>
-                <button pButton pRipple label="Ajouter" icon="pi pi-check" class="p-button-text" (click)="addReward()"></button>
+                <app-button
+                    [icon]="icons.cancel"
+                    [label]="texts.cancel"
+                    type="secondary"
+                    (onClick)="hideRewardDialog()"
+                ></app-button>
+                <app-button
+                    [icon]="icons.save"
+                    [label]="texts.save"
+                    type="success"
+                    (onClick)="addReward()"
+                ></app-button>
             </ng-template>
         </p-dialog>
     `,
@@ -164,9 +194,17 @@ import { Reward } from './models/reward.model';
             font-size: 0.8rem;
             color: var(--text-color-secondary);
         }
+
+        :host ::ng-deep .p-dialog-footer {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
     `]
 })
 export class AppComponent implements OnInit {
+    icons = Icons;
+    texts = ButtonTexts;
     totalMoney: number = 0;
     moneyDialog: boolean = false;
     rewardDialog: boolean = false;

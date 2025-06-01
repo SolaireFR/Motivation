@@ -3,6 +3,8 @@ export interface TaskHistory {
     earnedMoney: number;
 }
 
+export type TaskStatus = 'ACTIVE' | 'COMPLETED';
+
 export interface Task {
     id: number;
     title: string;
@@ -10,6 +12,7 @@ export interface Task {
     importance: 'LOW' | 'MEDIUM' | 'HIGH';
     moneyPerCompletion: number;
     history: TaskHistory[];
+    status: TaskStatus;
     createdAt: Date;
     updatedAt: Date;
 } 
