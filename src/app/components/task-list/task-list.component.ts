@@ -36,10 +36,6 @@ import { TaskService } from '../../services/task.service';
                 </div>
             </div>
 
-            <div class="mb-3">
-                <strong>Cagnotte totale : {{totalMoney}}€</strong>
-            </div>
-
             <p-table [value]="tasks" [tableStyle]="{'min-width': '50rem'}">
                 <ng-template pTemplate="header">
                     <tr>
@@ -78,7 +74,7 @@ import { TaskService } from '../../services/task.service';
                 </div>
                 <div class="field col-12">
                     <label for="importance">Importance*</label>
-                    <p-dropdown id="importance" [options]="importanceLevels" [(ngModel)]="currentTask.importance" placeholder="Sélectionner l'importance"></p-dropdown>
+                    <p-dropdown id="importance" [options]="importanceLevels" appendTo="body" [(ngModel)]="currentTask.importance" placeholder="Sélectionner l'importance"></p-dropdown>
                 </div>
             </div>
             <ng-template pTemplate="footer">
@@ -90,7 +86,6 @@ import { TaskService } from '../../services/task.service';
 })
 export class TaskListComponent implements OnInit {
     tasks: Task[] = [];
-    totalMoney: number = 0;
     taskDialog: boolean = false;
     currentTask: Partial<Task> = {};
     editMode: boolean = false;
@@ -107,9 +102,6 @@ export class TaskListComponent implements OnInit {
 
     ngOnInit() {
         this.loadTasks();
-        this.taskService.getTotalMoney().subscribe(money => {
-            this.totalMoney = money;
-        });
     }
 
     loadTasks() {

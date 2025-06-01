@@ -86,4 +86,16 @@ export class TaskService {
     getTaskById(id: number): Observable<Task | undefined> {
         return of(this.tasks.find(task => task.id === id));
     }
+
+    setTotalMoney(amount: number): Observable<number> {
+        this.totalMoney = amount;
+        this.totalMoneySubject.next(this.totalMoney);
+        return of(this.totalMoney);
+    }
+
+    resetTotalMoney(): Observable<number> {
+        this.totalMoney = 0;
+        this.totalMoneySubject.next(this.totalMoney);
+        return of(this.totalMoney);
+    }
 } 
