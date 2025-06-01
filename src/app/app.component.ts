@@ -6,9 +6,11 @@ import { TaskService } from './services/task.service';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { Reward } from './models/reward.model';
 
 @Component({
     selector: 'app-root',
@@ -20,6 +22,7 @@ import { ToastModule } from 'primeng/toast';
         ButtonModule,
         DialogModule,
         InputNumberModule,
+        InputTextModule,
         ConfirmDialogModule,
         ToastModule
     ],
@@ -33,10 +36,20 @@ import { ToastModule } from 'primeng/toast';
             <div class="grid-container">
                 <div class="money-block card">
                     <h2 class="text-2xl mb-3">Cagnotte Totale</h2>
-                    <div class="total-amount mb-3">{{totalMoney}}€</div>
-                    <div class="money-actions">
+                    <div class="total-amount mb-3" [ngClass]="{'negative': totalMoney < 0}">{{totalMoney}}€</div>
+                    <div class="money-actions mb-4">
                         <p-button icon="pi pi-pencil" (onClick)="showMoneyDialog()" class="mr-2" label="Modifier"></p-button>
-                        <p-button icon="pi pi-refresh" (onClick)="confirmReset()" severity="danger" label="Réinitialiser"></p-button>
+                        <p-button icon="pi pi-gift" (onClick)="showRewardDialog()" severity="success" label="Récompense"></p-button>
+                    </div>
+                    <div class="rewards-history" *ngIf="rewards.length > 0">
+                        <h3 class="text-lg mb-2">Historique des récompenses</h3>
+                        <div class="reward-list">
+                            <div class="reward-item" *ngFor="let reward of rewards">
+                                <span class="reward-name">{{reward.name}}</span>
+                                <span class="reward-amount">-{{reward.amount}}€</span>
+                                <span class="reward-date">{{reward.date | date:'dd/MM/yyyy HH:mm'}}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="tasks-block">
@@ -49,12 +62,29 @@ import { ToastModule } from 'primeng/toast';
             <div class="grid formgrid p-fluid mt-3">
                 <div class="field col-12">
                     <label for="amount">Nouveau montant</label>
-                    <p-inputNumber id="amount" [(ngModel)]="newAmount" [min]="0" mode="currency" currency="EUR"></p-inputNumber>
+                    <p-inputNumber id="amount" [(ngModel)]="newAmount" mode="currency" currency="EUR"></p-inputNumber>
                 </div>
             </div>
             <ng-template pTemplate="footer">
                 <button pButton pRipple label="Annuler" icon="pi pi-times" class="p-button-text" (click)="hideMoneyDialog()"></button>
                 <button pButton pRipple label="Sauvegarder" icon="pi pi-check" class="p-button-text" (click)="updateMoney()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="rewardDialog" header="Ajouter une récompense" [modal]="true" [style]="{width: '450px'}">
+            <div class="grid formgrid p-fluid mt-3">
+                <div class="field col-12">
+                    <label for="rewardName">Nom de la récompense*</label>
+                    <input pInputText id="rewardName" [(ngModel)]="newReward.name" required />
+                </div>
+                <div class="field col-12">
+                    <label for="rewardAmount">Montant*</label>
+                    <p-inputNumber id="rewardAmount" [(ngModel)]="newReward.amount" mode="currency" currency="EUR" [min]="0"></p-inputNumber>
+                </div>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Annuler" icon="pi pi-times" class="p-button-text" (click)="hideRewardDialog()"></button>
+                <button pButton pRipple label="Ajouter" icon="pi pi-check" class="p-button-text" (click)="addReward()"></button>
             </ng-template>
         </p-dialog>
     `,
@@ -84,6 +114,10 @@ import { ToastModule } from 'primeng/toast';
             color: var(--primary-color);
         }
 
+        .total-amount.negative {
+            color: var(--red-500);
+        }
+
         .tasks-block {
             min-width: 0;
         }
@@ -93,12 +127,55 @@ import { ToastModule } from 'primeng/toast';
             justify-content: center;
             gap: 0.5rem;
         }
+
+        .rewards-history {
+            text-align: left;
+            border-top: 1px solid var(--surface-border);
+            margin-top: 1rem;
+            padding-top: 1rem;
+        }
+
+        .reward-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .reward-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--surface-border);
+            font-size: 0.9rem;
+        }
+
+        .reward-name {
+            font-weight: 500;
+            grid-column: 1;
+        }
+
+        .reward-amount {
+            color: var(--red-500);
+            grid-column: 2;
+        }
+
+        .reward-date {
+            grid-column: 1 / -1;
+            font-size: 0.8rem;
+            color: var(--text-color-secondary);
+        }
     `]
 })
 export class AppComponent implements OnInit {
     totalMoney: number = 0;
     moneyDialog: boolean = false;
+    rewardDialog: boolean = false;
     newAmount: number = 0;
+    rewards: Reward[] = [];
+    newReward: Partial<Reward> = {
+        name: '',
+        amount: 0
+    };
 
     constructor(
         private taskService: TaskService,
@@ -109,6 +186,9 @@ export class AppComponent implements OnInit {
     ngOnInit() {
         this.taskService.getTotalMoney().subscribe(money => {
             this.totalMoney = money;
+        });
+        this.taskService.getRewards().subscribe(rewards => {
+            this.rewards = rewards;
         });
     }
 
@@ -122,32 +202,45 @@ export class AppComponent implements OnInit {
     }
 
     updateMoney() {
-        if (this.newAmount >= 0) {
-            this.taskService.setTotalMoney(this.newAmount).subscribe(() => {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Succès',
-                    detail: 'Cagnotte mise à jour'
-                });
-                this.hideMoneyDialog();
+        this.taskService.setTotalMoney(this.newAmount).subscribe(() => {
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Succès',
+                detail: 'Cagnotte mise à jour'
             });
-        }
+            this.hideMoneyDialog();
+        });
     }
 
-    confirmReset() {
-        this.confirmationService.confirm({
-            message: 'Êtes-vous sûr de vouloir réinitialiser la cagnotte à zéro ?',
-            header: 'Confirmation de réinitialisation',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                this.taskService.resetTotalMoney().subscribe(() => {
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Succès',
-                        detail: 'Cagnotte réinitialisée à zéro'
-                    });
-                });
-            }
+    showRewardDialog() {
+        this.newReward = {
+            name: '',
+            amount: 0
+        };
+        this.rewardDialog = true;
+    }
+
+    hideRewardDialog() {
+        this.rewardDialog = false;
+    }
+
+    addReward() {
+        if (!this.newReward.name || !this.newReward.amount) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Erreur',
+                detail: 'Veuillez remplir tous les champs'
+            });
+            return;
+        }
+
+        this.taskService.addReward(this.newReward.name, this.newReward.amount).subscribe(() => {
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Succès',
+                detail: 'Récompense ajoutée'
+            });
+            this.hideRewardDialog();
         });
     }
 } 

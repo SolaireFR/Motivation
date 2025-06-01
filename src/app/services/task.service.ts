@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { Task, TaskHistory } from '../models/task.model';
+import { Reward } from '../models/reward.model';
 
 @Injectable({
     providedIn: 'root'
@@ -8,8 +9,10 @@ import { Task, TaskHistory } from '../models/task.model';
 export class TaskService {
     private tasks: Task[] = [];
     private totalMoney: number = 0;
+    private rewards: Reward[] = [];
     private tasksSubject = new BehaviorSubject<Task[]>([]);
     private totalMoneySubject = new BehaviorSubject<number>(0);
+    private rewardsSubject = new BehaviorSubject<Reward[]>([]);
 
     constructor() {
         // Données de test
@@ -26,6 +29,10 @@ export class TaskService {
 
     getTotalMoney(): Observable<number> {
         return this.totalMoneySubject.asObservable();
+    }
+
+    getRewards(): Observable<Reward[]> {
+        return this.rewardsSubject.asObservable();
     }
 
     addTask(taskData: { title: string; description?: string; importance: 'LOW' | 'MEDIUM' | 'HIGH' }): Observable<Task> {
@@ -97,5 +104,19 @@ export class TaskService {
         this.totalMoney = 0;
         this.totalMoneySubject.next(this.totalMoney);
         return of(this.totalMoney);
+    }
+
+    addReward(name: string, amount: number): Observable<Reward> {
+        const reward: Reward = {
+            name,
+            amount,
+            date: new Date()
+        };
+        
+        this.rewards.unshift(reward); // Ajoute au début du tableau
+        this.totalMoney -= amount;
+        this.totalMoneySubject.next(this.totalMoney);
+        this.rewardsSubject.next([...this.rewards]);
+        return of(reward);
     }
 } 
