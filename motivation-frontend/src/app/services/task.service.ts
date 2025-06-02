@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, tap } from 'rxjs';
-import { Task, TaskHistory, TaskStatus } from '../models/task.model';
-import { Reward } from '../models/reward.model';
+import { BehaviorSubject, Observable, tap, switchMap, map } from 'rxjs';
+import { Task } from '../models/task.model';
 import { environment } from '../../environments/environment';
+import { BudgetService } from './budget.service';
 
 @Injectable({
     providedIn: 'root'
@@ -11,12 +11,11 @@ import { environment } from '../../environments/environment';
 export class TaskService {
     private apiUrl = `${environment.apiUrl}/tasks`;
     private tasksSubject = new BehaviorSubject<Task[]>([]);
-    private totalMoney: number = 0;
-    private rewards: Reward[] = [];
-    private totalMoneySubject = new BehaviorSubject<number>(0);
-    private rewardsSubject = new BehaviorSubject<Reward[]>([]);
 
-    constructor(private http: HttpClient) {
+    constructor(
+        private http: HttpClient,
+        private budgetService: BudgetService
+    ) {
         this.loadTasks();
     }
 
@@ -27,14 +26,6 @@ export class TaskService {
 
     getTasks(): Observable<Task[]> {
         return this.tasksSubject.asObservable();
-    }
-
-    getTotalMoney(): Observable<number> {
-        return this.totalMoneySubject.asObservable();
-    }
-
-    getRewards(): Observable<Reward[]> {
-        return this.rewardsSubject.asObservable();
     }
 
     addTask(taskData: { 
@@ -71,10 +62,8 @@ export class TaskService {
             reward: taskData.reward
         };
 
-        console.log('Envoi de la requête PATCH avec les données:', cleanedData);
         return this.http.patch<Task>(`${this.apiUrl}/${id}`, cleanedData).pipe(
             tap(updatedTask => {
-                console.log('Réponse du serveur:', updatedTask);
                 const currentTasks = this.tasksSubject.value;
                 const index = currentTasks.findIndex(task => task._id === id);
                 if (index !== -1) {
@@ -96,18 +85,23 @@ export class TaskService {
 
     completeTask(id: string): Observable<Task> {
         return this.http.post<Task>(`${this.apiUrl}/${id}/complete`, {}).pipe(
-            tap(updatedTask => {
+            switchMap(updatedTask => {
+                // Mettre à jour la liste des tâches
                 const currentTasks = this.tasksSubject.value;
                 const index = currentTasks.findIndex(task => task._id === id);
                 if (index !== -1) {
                     currentTasks[index] = updatedTask;
                     this.tasksSubject.next([...currentTasks]);
-                    // Mettre à jour le total d'argent lorsqu'une tâche est complétée
-                    if (updatedTask.reward) {
-                        this.totalMoney += updatedTask.reward;
-                        this.totalMoneySubject.next(this.totalMoney);
-                    }
                 }
+
+                // Ajouter la récompense au budget
+                return this.budgetService.addReward(
+                    updatedTask.reward,
+                    `Récompense pour la tâche : ${updatedTask.title}`,
+                    updatedTask._id
+                ).pipe(
+                    map(() => updatedTask) // Retourner la tâche mise à jour
+                );
             })
         );
     }
@@ -127,31 +121,5 @@ export class TaskService {
 
     getTaskById(id: string): Observable<Task> {
         return this.http.get<Task>(`${this.apiUrl}/${id}`);
-    }
-
-    setTotalMoney(amount: number): Observable<number> {
-        this.totalMoney = Math.max(0, Number(amount) || 0);
-        this.totalMoneySubject.next(this.totalMoney);
-        return of(this.totalMoney);
-    }
-
-    resetTotalMoney(): Observable<number> {
-        this.totalMoney = 0;
-        this.totalMoneySubject.next(this.totalMoney);
-        return of(this.totalMoney);
-    }
-
-    addReward(name: string, amount: number): Observable<Reward> {
-        const reward: Reward = {
-            name,
-            amount: Math.max(0, Number(amount) || 0),
-            date: new Date()
-        };
-        
-        this.rewards.unshift(reward);
-        this.totalMoney = Math.max(0, this.totalMoney - reward.amount);
-        this.totalMoneySubject.next(this.totalMoney);
-        this.rewardsSubject.next([...this.rewards]);
-        return of(reward);
     }
 } 

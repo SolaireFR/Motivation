@@ -1,14 +1,16 @@
-export type TransactionType = 'REWARD' | 'EXPENSE';
-
 export interface Transaction {
-    id: number;
-    type: TransactionType;
+    _id: string;
     amount: number;
+    type: 'REWARD' | 'EXPENSE';
     description: string;
+    taskId?: string;
     date: Date;
 }
 
 export interface Budget {
+    _id: string;
     total: number;
     transactions: Transaction[];
+    createdAt: Date;
+    updatedAt: Date;
 } 

@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TaskListComponent } from './components/task-list/task-list.component';
-import { TaskService } from './services/task.service';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
@@ -10,8 +9,11 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { Reward } from './models/reward.model';
+import { Budget } from './models/budget.model';
 import { ButtonComponent } from './shared/components/button.component';
 import { Icons, ButtonTexts } from './shared/ui-constants';
+import { BudgetService } from './services/budget.service';
+import { RewardService } from './services/reward.service';
 
 @Component({
     selector: 'app-root',
@@ -37,13 +39,8 @@ import { Icons, ButtonTexts } from './shared/ui-constants';
             <div class="grid-container">
                 <div class="money-block card">
                     <h2 class="text-2xl mb-3">Cagnotte Totale</h2>
-                    <div class="total-amount mb-3" [ngClass]="{'negative': totalMoney < 0}">{{totalMoney}}€</div>
+                    <div class="total-amount mb-3" [ngClass]="{'negative': budget?.total < 0}">{{budget?.total || 0}}€</div>
                     <div class="money-actions mb-4">
-                        <app-button
-                            [icon]="icons.edit"
-                            [label]="texts.edit"
-                            (onClick)="showMoneyDialog()"
-                        ></app-button>
                         <app-button
                             [icon]="icons.gift"
                             [label]="texts.reward"
@@ -67,29 +64,6 @@ import { Icons, ButtonTexts } from './shared/ui-constants';
                 </div>
             </div>
         </div>
-
-        <p-dialog [(visible)]="moneyDialog" header="Modifier la cagnotte" [modal]="true" [style]="{width: '450px'}">
-            <div class="grid formgrid p-fluid mt-3">
-                <div class="field col-12">
-                    <label for="amount">Nouveau montant</label>
-                    <p-inputNumber id="amount" [(ngModel)]="newAmount" mode="currency" currency="EUR"></p-inputNumber>
-                </div>
-            </div>
-            <ng-template pTemplate="footer">
-                <app-button
-                    [icon]="icons.cancel"
-                    [label]="texts.cancel"
-                    type="secondary"
-                    (onClick)="hideMoneyDialog()"
-                ></app-button>
-                <app-button
-                    [icon]="icons.save"
-                    [label]="texts.save"
-                    type="success"
-                    (onClick)="updateMoney()"
-                ></app-button>
-            </ng-template>
-        </p-dialog>
 
         <p-dialog [(visible)]="rewardDialog" header="Ajouter une récompense" [modal]="true" [style]="{width: '450px'}">
             <div class="grid formgrid p-fluid mt-3">
@@ -205,10 +179,8 @@ import { Icons, ButtonTexts } from './shared/ui-constants';
 export class AppComponent implements OnInit {
     icons = Icons;
     texts = ButtonTexts;
-    totalMoney: number = 0;
-    moneyDialog: boolean = false;
+    budget: Budget | null = null;
     rewardDialog: boolean = false;
-    newAmount: number = 0;
     rewards: Reward[] = [];
     newReward: Partial<Reward> = {
         name: '',
@@ -216,37 +188,17 @@ export class AppComponent implements OnInit {
     };
 
     constructor(
-        private taskService: TaskService,
-        private confirmationService: ConfirmationService,
+        private budgetService: BudgetService,
+        private rewardService: RewardService,
         private messageService: MessageService
     ) {}
 
     ngOnInit() {
-        this.taskService.getTotalMoney().subscribe(money => {
-            this.totalMoney = money;
+        this.budgetService.getBudget().subscribe(budget => {
+            this.budget = budget;
         });
-        this.taskService.getRewards().subscribe(rewards => {
+        this.rewardService.getRewards().subscribe(rewards => {
             this.rewards = rewards;
-        });
-    }
-
-    showMoneyDialog() {
-        this.newAmount = this.totalMoney;
-        this.moneyDialog = true;
-    }
-
-    hideMoneyDialog() {
-        this.moneyDialog = false;
-    }
-
-    updateMoney() {
-        this.taskService.setTotalMoney(this.newAmount).subscribe(() => {
-            this.messageService.add({
-                severity: 'success',
-                summary: 'Succès',
-                detail: 'Cagnotte mise à jour'
-            });
-            this.hideMoneyDialog();
         });
     }
 
@@ -260,6 +212,10 @@ export class AppComponent implements OnInit {
 
     hideRewardDialog() {
         this.rewardDialog = false;
+        this.newReward = {
+            name: '',
+            amount: 0
+        };
     }
 
     addReward() {
@@ -272,13 +228,23 @@ export class AppComponent implements OnInit {
             return;
         }
 
-        this.taskService.addReward(this.newReward.name, this.newReward.amount).subscribe(() => {
-            this.messageService.add({
-                severity: 'success',
-                summary: 'Succès',
-                detail: 'Récompense ajoutée'
-            });
-            this.hideRewardDialog();
+        this.rewardService.addReward(this.newReward.name, this.newReward.amount).subscribe({
+            next: () => {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Succès',
+                    detail: 'Récompense ajoutée'
+                });
+                this.hideRewardDialog();
+            },
+            error: (error) => {
+                console.error('Erreur lors de l\'ajout de la récompense:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erreur',
+                    detail: 'Erreur lors de l\'ajout de la récompense'
+                });
+            }
         });
     }
 } 

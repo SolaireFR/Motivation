@@ -1,50 +1,61 @@
 import { Controller, Get, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { BudgetService } from '../services/budget.service';
-import { AddRewardDto, AddExpenseDto, BudgetResponseDto, TransactionResponseDto } from '../dto/budget.dto';
-import { Budget, Transaction } from '../models/budget.model';
+import { BudgetResponseDto, TransactionResponseDto, AddTransactionDto } from '../dto/budget.dto';
 
-@ApiTags('budget')
+@ApiTags('Budget')
 @Controller('budget')
 export class BudgetController {
-  constructor(private readonly budgetService: BudgetService) {}
+    constructor(private readonly budgetService: BudgetService) {}
 
-  @Get()
-  @ApiOperation({ summary: 'Obtenir l\'état du budget' })
-  @ApiResponse({ status: 200, description: 'État du budget', type: BudgetResponseDto })
-  getBudget(): Budget {
-    return this.budgetService.getBudget();
-  }
+    @Get()
+    @ApiOperation({ summary: "Obtenir l'état du budget" })
+    @ApiResponse({ status: 200, description: 'État du budget', type: BudgetResponseDto })
+    async getBudget(): Promise<BudgetResponseDto> {
+        return await this.budgetService.getBudget();
+    }
 
-  @Get('total')
-  @ApiOperation({ summary: 'Obtenir le montant total' })
-  @ApiResponse({ status: 200, description: 'Montant total du budget' })
-  getTotal(): { total: number } {
-    return { total: this.budgetService.getTotal() };
-  }
+    @Get('total')
+    @ApiOperation({ summary: 'Obtenir le montant total' })
+    @ApiResponse({ status: 200, description: 'Montant total du budget' })
+    async getTotal(): Promise<{ total: number }> {
+        const budget = await this.budgetService.getBudget();
+        return { total: budget.total };
+    }
 
-  @Get('transactions')
-  @ApiOperation({ summary: 'Obtenir l\'historique des transactions' })
-  @ApiResponse({ status: 200, description: 'Liste des transactions', type: [TransactionResponseDto] })
-  getTransactions(): Transaction[] {
-    return this.budgetService.getTransactions();
-  }
+    @Get('transactions')
+    @ApiOperation({ summary: "Obtenir l'historique des transactions" })
+    @ApiResponse({ status: 200, description: 'Liste des transactions', type: [TransactionResponseDto] })
+    async getTransactions(): Promise<TransactionResponseDto[]> {
+        return await this.budgetService.getTransactions();
+    }
 
-  @Post('reward')
-  @ApiOperation({ summary: 'Ajouter une récompense' })
-  @ApiResponse({ status: 201, description: 'Récompense ajoutée', type: TransactionResponseDto })
-  @ApiResponse({ status: 400, description: 'Données invalides' })
-  addReward(@Body() addRewardDto: AddRewardDto): Transaction {
-    const { amount, description, taskId } = addRewardDto;
-    return this.budgetService.addReward(amount, description, taskId);
-  }
+    @Post('transactions')
+    @ApiOperation({ summary: 'Ajouter une transaction' })
+    @ApiResponse({ status: 201, description: 'Transaction ajoutée', type: TransactionResponseDto })
+    @ApiResponse({ status: 400, description: 'Données invalides' })
+    async addTransaction(@Body() transactionDto: AddTransactionDto): Promise<TransactionResponseDto> {
+        try {
+            return await this.budgetService.addTransaction(transactionDto);
+        } catch (error) {
+            throw new HttpException(
+                error.message || "Erreur lors de l'ajout de la transaction",
+                HttpStatus.BAD_REQUEST,
+            );
+        }
+    }
 
-  @Post('expense')
-  @ApiOperation({ summary: 'Ajouter une dépense' })
-  @ApiResponse({ status: 201, description: 'Dépense ajoutée', type: TransactionResponseDto })
-  @ApiResponse({ status: 400, description: 'Données invalides' })
-  addExpense(@Body() addExpenseDto: AddExpenseDto): Transaction {
-    const { amount, description } = addExpenseDto;
-    return this.budgetService.addExpense(amount, description);
-  }
-} 
+    @Post('reset')
+    @ApiOperation({ summary: 'Réinitialiser le budget' })
+    @ApiResponse({ status: 200, description: 'Budget réinitialisé', type: BudgetResponseDto })
+    async resetBudget(): Promise<BudgetResponseDto> {
+        try {
+            return await this.budgetService.resetBudget();
+        } catch (error) {
+            throw new HttpException(
+                error.message || 'Erreur lors de la réinitialisation du budget',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+}

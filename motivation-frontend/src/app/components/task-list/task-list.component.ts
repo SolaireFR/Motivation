@@ -336,7 +336,7 @@ export class TaskListComponent implements OnInit {
         if (!task._id) return;
 
         this.taskService.completeTask(task._id).subscribe({
-            next: () => {
+            next: (completedTask) => {
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Succès',
@@ -345,6 +345,7 @@ export class TaskListComponent implements OnInit {
                 this.loadTasks();
             },
             error: (error) => {
+                console.error('Erreur lors de la complétion de la tâche:', error);
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Erreur',

@@ -1,59 +1,64 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
-import { TransactionType } from '../models/budget.model';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNumber, IsString, IsOptional, IsEnum, IsDate } from 'class-validator';
+import { Types } from 'mongoose';
 
-export class AddRewardDto {
-  @ApiProperty({ description: 'Montant de la récompense', minimum: 0 })
-  @IsNumber()
-  @Min(0)
-  amount: number;
-
-  @ApiProperty({ description: 'Description de la récompense' })
-  @IsNotEmpty()
-  @IsString()
-  description: string;
-
-  @ApiPropertyOptional({ description: 'ID de la tâche associée' })
-  @IsString()
-  taskId?: string;
+export enum TransactionType {
+    REWARD = 'REWARD',
+    EXPENSE = 'EXPENSE'
 }
 
-export class AddExpenseDto {
-  @ApiProperty({ description: 'Montant de la dépense', minimum: 0 })
-  @IsNumber()
-  @Min(0)
-  amount: number;
+export class AddTransactionDto {
+    @ApiProperty()
+    @IsNumber()
+    amount: number;
 
-  @ApiProperty({ description: 'Description de la dépense' })
-  @IsNotEmpty()
-  @IsString()
-  description: string;
+    @ApiProperty({ enum: TransactionType })
+    @IsEnum(TransactionType)
+    type: TransactionType;
+
+    @ApiProperty()
+    @IsString()
+    description: string;
+
+    @ApiProperty({ required: false })
+    @IsString()
+    @IsOptional()
+    taskId?: string;
 }
 
 export class TransactionResponseDto {
-  @ApiProperty()
-  id: string;
+    @ApiProperty()
+    _id: Types.ObjectId;
 
-  @ApiProperty()
-  amount: number;
+    @ApiProperty()
+    amount: number;
 
-  @ApiProperty({ enum: TransactionType })
-  type: TransactionType;
+    @ApiProperty({ enum: TransactionType })
+    type: TransactionType;
 
-  @ApiProperty()
-  description: string;
+    @ApiProperty()
+    description: string;
 
-  @ApiProperty()
-  date: Date;
+    @ApiProperty({ required: false })
+    taskId?: Types.ObjectId;
 
-  @ApiPropertyOptional()
-  taskId?: string;
+    @ApiProperty()
+    date: Date;
 }
 
 export class BudgetResponseDto {
-  @ApiProperty()
-  total: number;
+    @ApiProperty()
+    _id: Types.ObjectId;
 
-  @ApiProperty({ type: [TransactionResponseDto] })
-  transactions: TransactionResponseDto[];
+    @ApiProperty()
+    total: number;
+
+    @ApiProperty({ type: [TransactionResponseDto] })
+    transactions: TransactionResponseDto[];
+
+    @ApiProperty()
+    createdAt: Date;
+
+    @ApiProperty()
+    updatedAt: Date;
 } 
