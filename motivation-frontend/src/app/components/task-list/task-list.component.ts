@@ -234,12 +234,12 @@ export class TaskListComponent implements OnInit {
             reward: this.currentTask.reward
         };
 
-        if (this.editMode && this.currentTask.id) {
+        if (this.editMode && this.currentTask._id) {
             // Mode édition - PATCH
-            console.log('Mode édition - ID:', this.currentTask.id);
+            console.log('Mode édition - ID:', this.currentTask._id);
             console.log('Données de mise à jour:', taskData);
 
-            this.taskService.updateTask(this.currentTask.id, taskData).subscribe({
+            this.taskService.updateTask(this.currentTask._id, taskData).subscribe({
                 next: (updatedTask) => {
                     console.log('Tâche mise à jour avec succès:', updatedTask);
                     this.messageService.add({
@@ -288,7 +288,7 @@ export class TaskListComponent implements OnInit {
     }
 
     deleteTask(task: Task) {
-        if (!task.id) return;
+        if (!task._id) return;
         
         this.confirmationService.confirm({
             message: `Voulez-vous vraiment supprimer la tâche "${task.title}" ?`,
@@ -297,7 +297,7 @@ export class TaskListComponent implements OnInit {
             acceptLabel: 'Oui, supprimer',
             rejectLabel: 'Non, annuler',
             accept: () => {
-                this.taskService.deleteTask(task.id!).subscribe({
+                this.taskService.deleteTask(task._id!).subscribe({
                     next: () => {
                         this.messageService.add({
                             severity: 'success',
@@ -320,7 +320,7 @@ export class TaskListComponent implements OnInit {
     }
 
     confirmTaskCompletion(task: Task) {
-        if (!task.id) return;
+        if (!task._id) return;
 
         this.confirmationService.confirm({
             message: `Voulez-vous valider la tâche "${task.title}" ? Vous gagnerez ${task.reward}€.`,
@@ -333,9 +333,9 @@ export class TaskListComponent implements OnInit {
     }
 
     completeTask(task: Task) {
-        if (!task.id) return;
+        if (!task._id) return;
 
-        this.taskService.completeTask(task.id).subscribe({
+        this.taskService.completeTask(task._id).subscribe({
             next: () => {
                 this.messageService.add({
                     severity: 'success',
@@ -355,9 +355,9 @@ export class TaskListComponent implements OnInit {
     }
 
     reopenTask(task: Task) {
-        if (!task.id) return;
+        if (!task._id) return;
 
-        this.taskService.reopenTask(task.id).subscribe({
+        this.taskService.reopenTask(task._id).subscribe({
             next: () => {
                 this.messageService.add({
                     severity: 'success',

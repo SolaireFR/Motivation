@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsString, Min, IsOptional, IsEnum, IsDate } from 'class-validator';
 import { TaskStatus } from '../models/task.model';
 import { Type } from 'class-transformer';
+import { Types } from 'mongoose';
 
 export class CreateTaskDto {
   @ApiProperty({ description: 'Titre de la tâche' })
@@ -61,7 +62,7 @@ export class UpdateTaskDto {
 
 export class TaskResponseDto {
   @ApiProperty()
-  id: string;
+  _id: Types.ObjectId;
 
   @ApiProperty()
   title: string;

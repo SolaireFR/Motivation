@@ -76,7 +76,7 @@ export class TaskService {
             tap(updatedTask => {
                 console.log('Réponse du serveur:', updatedTask);
                 const currentTasks = this.tasksSubject.value;
-                const index = currentTasks.findIndex(task => task.id === id);
+                const index = currentTasks.findIndex(task => task._id === id);
                 if (index !== -1) {
                     currentTasks[index] = updatedTask;
                     this.tasksSubject.next([...currentTasks]);
@@ -89,7 +89,7 @@ export class TaskService {
         return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
             tap(() => {
                 const currentTasks = this.tasksSubject.value;
-                this.tasksSubject.next(currentTasks.filter(task => task.id !== id));
+                this.tasksSubject.next(currentTasks.filter(task => task._id !== id));
             })
         );
     }
@@ -98,7 +98,7 @@ export class TaskService {
         return this.http.post<Task>(`${this.apiUrl}/${id}/complete`, {}).pipe(
             tap(updatedTask => {
                 const currentTasks = this.tasksSubject.value;
-                const index = currentTasks.findIndex(task => task.id === id);
+                const index = currentTasks.findIndex(task => task._id === id);
                 if (index !== -1) {
                     currentTasks[index] = updatedTask;
                     this.tasksSubject.next([...currentTasks]);
@@ -116,7 +116,7 @@ export class TaskService {
         return this.http.post<Task>(`${this.apiUrl}/${id}/reopen`, {}).pipe(
             tap(updatedTask => {
                 const currentTasks = this.tasksSubject.value;
-                const index = currentTasks.findIndex(task => task.id === id);
+                const index = currentTasks.findIndex(task => task._id === id);
                 if (index !== -1) {
                     currentTasks[index] = updatedTask;
                     this.tasksSubject.next([...currentTasks]);
