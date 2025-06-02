@@ -224,7 +224,7 @@ export class TaskListComponent implements OnInit {
                 this.hideDialog();
             });
         } else {
-            this.taskService.addTask(this.currentTask as { title: string; description?: string; importance: 'LOW' | 'MEDIUM' | 'HIGH' }).subscribe(() => {
+            this.taskService.addTask(this.currentTask as { title: string; description?: string; importance: 'LOW' | 'MEDIUM' | 'HIGH'; reward: number }).subscribe(() => {
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Succès',
@@ -247,7 +247,7 @@ export class TaskListComponent implements OnInit {
 
     confirmTaskCompletion(task: Task) {
         this.confirmationService.confirm({
-            message: `Voulez-vous valider la tâche "${task.title}" ? Vous gagnerez ${task.moneyPerCompletion}€.`,
+            message: `Voulez-vous valider la tâche "${task.title}" ? Vous gagnerez ${task.reward}€.`,
             header: 'Confirmation de validation',
             icon: 'pi pi-check-circle',
             accept: () => {
@@ -261,7 +261,7 @@ export class TaskListComponent implements OnInit {
             this.messageService.add({
                 severity: 'success',
                 summary: 'Succès',
-                detail: `Tâche complétée ! +${task.moneyPerCompletion}€`
+                detail: `Tâche complétée ! +${task.reward}€`
             });
             this.loadTasks();
         });

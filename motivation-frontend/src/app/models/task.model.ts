@@ -10,7 +10,7 @@ export interface Task {
     title: string;
     description?: string;
     importance: 'LOW' | 'MEDIUM' | 'HIGH';
-    moneyPerCompletion: number;
+    reward: number;
     history: TaskHistory[];
     status: TaskStatus;
     createdAt: Date;

@@ -1,26 +1,28 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, of, tap } from 'rxjs';
 import { Task, TaskHistory, TaskStatus } from '../models/task.model';
 import { Reward } from '../models/reward.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
     providedIn: 'root'
 })
 export class TaskService {
-    private tasks: Task[] = [];
+    private apiUrl = `${environment.apiUrl}/tasks`;
+    private tasksSubject = new BehaviorSubject<Task[]>([]);
     private totalMoney: number = 0;
     private rewards: Reward[] = [];
-    private tasksSubject = new BehaviorSubject<Task[]>([]);
     private totalMoneySubject = new BehaviorSubject<number>(0);
     private rewardsSubject = new BehaviorSubject<Reward[]>([]);
 
-    constructor() {
-        // Données de test
-        this.addTask({
-            title: 'Exemple de tâche',
-            description: 'Description de la tâche exemple',
-            importance: 'MEDIUM'
-        });
+    constructor(private http: HttpClient) {
+        this.loadTasks();
+    }
+
+    private loadTasks(): void {
+        this.http.get<Task[]>(this.apiUrl)
+            .subscribe(tasks => this.tasksSubject.next(tasks));
     }
 
     getTasks(): Observable<Task[]> {
@@ -35,80 +37,90 @@ export class TaskService {
         return this.rewardsSubject.asObservable();
     }
 
-    addTask(taskData: { title: string; description?: string; importance: 'LOW' | 'MEDIUM' | 'HIGH' }): Observable<Task> {
-        const newTask: Task = {
-            id: this.tasks.length + 1,
-            ...taskData,
-            moneyPerCompletion: 10,
-            history: [],
-            status: 'ACTIVE',
-            createdAt: new Date(),
-            updatedAt: new Date()
-        };
+    addTask(taskData: { 
+        title: string; 
+        description?: string; 
+        importance: 'LOW' | 'MEDIUM' | 'HIGH';
+        reward: number;
+    }): Observable<Task> {
+        // Assurons-nous que la récompense est un nombre positif
+        const reward = Math.max(0, Number(taskData.reward) || 0);
         
-        this.tasks.push(newTask);
-        this.tasksSubject.next([...this.tasks]);
-        return of(newTask);
+        return this.http.post<Task>(this.apiUrl, {
+            ...taskData,
+            reward
+        }).pipe(
+            tap(newTask => {
+                const currentTasks = this.tasksSubject.value;
+                this.tasksSubject.next([...currentTasks, newTask]);
+            })
+        );
     }
 
-    updateTask(id: number, taskData: Partial<Task>): Observable<Task | undefined> {
-        const index = this.tasks.findIndex(task => task.id === id);
-        if (index !== -1 && this.tasks[index].status === 'ACTIVE') {
-            this.tasks[index] = {
-                ...this.tasks[index],
-                ...taskData,
-                updatedAt: new Date()
-            };
-            this.tasksSubject.next([...this.tasks]);
-            return of(this.tasks[index]);
+    updateTask(id: number, taskData: Partial<Task>): Observable<Task> {
+        // Si la récompense est mise à jour, assurons-nous qu'elle est un nombre positif
+        if (taskData.reward !== undefined) {
+            taskData.reward = Math.max(0, Number(taskData.reward) || 0);
         }
-        return of(undefined);
+
+        return this.http.patch<Task>(`${this.apiUrl}/${id}`, taskData).pipe(
+            tap(updatedTask => {
+                const currentTasks = this.tasksSubject.value;
+                const index = currentTasks.findIndex(task => task.id === id);
+                if (index !== -1) {
+                    currentTasks[index] = updatedTask;
+                    this.tasksSubject.next([...currentTasks]);
+                }
+            })
+        );
     }
 
-    deleteTask(id: number): Observable<boolean> {
-        const index = this.tasks.findIndex(task => task.id === id);
-        if (index !== -1) {
-            this.tasks.splice(index, 1);
-            this.tasksSubject.next([...this.tasks]);
-            return of(true);
-        }
-        return of(false);
+    deleteTask(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+            tap(() => {
+                const currentTasks = this.tasksSubject.value;
+                this.tasksSubject.next(currentTasks.filter(task => task.id !== id));
+            })
+        );
     }
 
-    completeTask(id: number): Observable<Task | undefined> {
-        const task = this.tasks.find(t => t.id === id);
-        if (task && task.status === 'ACTIVE') {
-            const completion: TaskHistory = {
-                completionDate: new Date(),
-                earnedMoney: task.moneyPerCompletion
-            };
-            task.history.push(completion);
-            task.status = 'COMPLETED';
-            this.totalMoney += task.moneyPerCompletion;
-            this.totalMoneySubject.next(this.totalMoney);
-            this.tasksSubject.next([...this.tasks]);
-            return of(task);
-        }
-        return of(undefined);
+    completeTask(id: number): Observable<Task> {
+        return this.http.post<Task>(`${this.apiUrl}/${id}/complete`, {}).pipe(
+            tap(updatedTask => {
+                const currentTasks = this.tasksSubject.value;
+                const index = currentTasks.findIndex(task => task.id === id);
+                if (index !== -1) {
+                    currentTasks[index] = updatedTask;
+                    this.tasksSubject.next([...currentTasks]);
+                    // Mettre à jour le total d'argent lorsqu'une tâche est complétée
+                    if (updatedTask.reward) {
+                        this.totalMoney += updatedTask.reward;
+                        this.totalMoneySubject.next(this.totalMoney);
+                    }
+                }
+            })
+        );
     }
 
-    reopenTask(id: number): Observable<Task | undefined> {
-        const task = this.tasks.find(t => t.id === id);
-        if (task && task.status === 'COMPLETED') {
-            task.status = 'ACTIVE';
-            task.updatedAt = new Date();
-            this.tasksSubject.next([...this.tasks]);
-            return of(task);
-        }
-        return of(undefined);
+    reopenTask(id: number): Observable<Task> {
+        return this.http.post<Task>(`${this.apiUrl}/${id}/reopen`, {}).pipe(
+            tap(updatedTask => {
+                const currentTasks = this.tasksSubject.value;
+                const index = currentTasks.findIndex(task => task.id === id);
+                if (index !== -1) {
+                    currentTasks[index] = updatedTask;
+                    this.tasksSubject.next([...currentTasks]);
+                }
+            })
+        );
     }
 
-    getTaskById(id: number): Observable<Task | undefined> {
-        return of(this.tasks.find(task => task.id === id));
+    getTaskById(id: number): Observable<Task> {
+        return this.http.get<Task>(`${this.apiUrl}/${id}`);
     }
 
     setTotalMoney(amount: number): Observable<number> {
-        this.totalMoney = amount;
+        this.totalMoney = Math.max(0, Number(amount) || 0);
         this.totalMoneySubject.next(this.totalMoney);
         return of(this.totalMoney);
     }
@@ -122,12 +134,12 @@ export class TaskService {
     addReward(name: string, amount: number): Observable<Reward> {
         const reward: Reward = {
             name,
-            amount,
+            amount: Math.max(0, Number(amount) || 0),
             date: new Date()
         };
         
-        this.rewards.unshift(reward); // Ajoute au début du tableau
-        this.totalMoney -= amount;
+        this.rewards.unshift(reward);
+        this.totalMoney = Math.max(0, this.totalMoney - reward.amount);
         this.totalMoneySubject.next(this.totalMoney);
         this.rewardsSubject.next([...this.rewards]);
         return of(reward);
