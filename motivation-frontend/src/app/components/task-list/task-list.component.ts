@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { TagModule } from 'primeng/tag';
@@ -23,6 +24,7 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
         TableModule,
         DialogModule,
         InputTextModule,
+        InputNumberModule,
         DropdownModule,
         ToastModule,
         TagModule,
@@ -52,7 +54,7 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
                         <th>Titre</th>
                         <th>Description</th>
                         <th>Importance</th>
-                        <th>Gains par complétion</th>
+                        <th>Récompense</th>
                         <th>Statut</th>
                         <th>Actions</th>
                     </tr>
@@ -62,7 +64,7 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
                         <td>{{task.title}}</td>
                         <td>{{task.description}}</td>
                         <td>{{task.importance}}</td>
-                        <td>{{task.moneyPerCompletion}}€</td>
+                        <td>{{task.reward}}€</td>
                         <td>
                             <p-tag [severity]="task.status === 'COMPLETED' ? 'success' : 'info'"
                                   [value]="task.status === 'COMPLETED' ? 'Terminée' : 'Active'">
@@ -119,6 +121,10 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
                 <div class="field col-12">
                     <label for="importance">Importance*</label>
                     <p-dropdown id="importance" [options]="importanceLevels" appendTo="body" [(ngModel)]="currentTask.importance" placeholder="Sélectionner l'importance"></p-dropdown>
+                </div>
+                <div class="field col-12">
+                    <label for="reward">Récompense (€)*</label>
+                    <p-inputNumber id="reward" [(ngModel)]="currentTask.reward" [min]="0" [showButtons]="true" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="2"></p-inputNumber>
                 </div>
             </div>
             <ng-template pTemplate="footer">
@@ -188,7 +194,10 @@ export class TaskListComponent implements OnInit {
     }
 
     showNewTaskDialog() {
-        this.currentTask = {};
+        this.currentTask = {
+            reward: 10, // Valeur par défaut pour la récompense
+            importance: 'MEDIUM' // Valeur par défaut pour l'importance
+        };
         this.editMode = false;
         this.taskDialog = true;
     }
@@ -205,7 +214,7 @@ export class TaskListComponent implements OnInit {
     }
 
     saveTask() {
-        if (!this.currentTask.title || !this.currentTask.importance) {
+        if (!this.currentTask.title || !this.currentTask.importance || this.currentTask.reward === undefined) {
             this.messageService.add({
                 severity: 'error',
                 summary: 'Erreur',
@@ -214,38 +223,99 @@ export class TaskListComponent implements OnInit {
             return;
         }
 
-        if (this.editMode) {
-            this.taskService.updateTask(this.currentTask.id!, this.currentTask).subscribe(() => {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Succès',
-                    detail: 'Tâche mise à jour'
-                });
-                this.hideDialog();
+        // S'assurer que la récompense est un nombre positif
+        this.currentTask.reward = Math.max(0, Number(this.currentTask.reward));
+
+        if (this.editMode && this.currentTask.id) {
+            console.log('Mode édition - ID:', this.currentTask.id);
+            // Pour la mise à jour, on n'envoie que les champs modifiables
+            const updateData = {
+                title: this.currentTask.title,
+                description: this.currentTask.description || '',  // Envoyer une chaîne vide si null/undefined
+                importance: this.currentTask.importance,
+                reward: this.currentTask.reward
+            };
+            console.log('Données de mise à jour:', updateData);
+
+            this.taskService.updateTask(this.currentTask.id, updateData).subscribe({
+                next: (updatedTask) => {
+                    console.log('Tâche mise à jour avec succès:', updatedTask);
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Succès',
+                        detail: 'Tâche mise à jour'
+                    });
+                    this.loadTasks();
+                    this.hideDialog();
+                },
+                error: (error) => {
+                    console.error('Erreur lors de la mise à jour:', error);
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Erreur',
+                        detail: `Erreur lors de la mise à jour de la tâche: ${error.message || 'Erreur inconnue'}`
+                    });
+                }
             });
         } else {
-            this.taskService.addTask(this.currentTask as { title: string; description?: string; importance: 'LOW' | 'MEDIUM' | 'HIGH'; reward: number }).subscribe(() => {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Succès',
-                    detail: 'Tâche créée'
-                });
-                this.hideDialog();
+            console.log('Mode création');
+            // Pour la création, on n'envoie que les champs nécessaires
+            const createData = {
+                title: this.currentTask.title,
+                description: this.currentTask.description,
+                importance: this.currentTask.importance,
+                reward: this.currentTask.reward
+            };
+            console.log('Données de création:', createData);
+
+            this.taskService.addTask(createData).subscribe({
+                next: (newTask) => {
+                    console.log('Tâche créée avec succès:', newTask);
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Succès',
+                        detail: 'Tâche créée'
+                    });
+                    this.loadTasks();
+                    this.hideDialog();
+                },
+                error: (error) => {
+                    console.error('Erreur lors de la création:', error);
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Erreur',
+                        detail: `Erreur lors de la création de la tâche: ${error.message || 'Erreur inconnue'}`
+                    });
+                }
             });
         }
     }
 
     deleteTask(task: Task) {
-        this.taskService.deleteTask(task.id).subscribe(() => {
-            this.messageService.add({
-                severity: 'success',
-                summary: 'Succès',
-                detail: 'Tâche supprimée'
-            });
+        if (!task.id) return;
+        
+        this.taskService.deleteTask(task.id).subscribe({
+            next: () => {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Succès',
+                    detail: 'Tâche supprimée'
+                });
+                this.loadTasks();
+            },
+            error: (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erreur',
+                    detail: 'Erreur lors de la suppression de la tâche'
+                });
+            }
         });
     }
 
     confirmTaskCompletion(task: Task) {
+        if (!task.id) return;
+
         this.confirmationService.confirm({
             message: `Voulez-vous valider la tâche "${task.title}" ? Vous gagnerez ${task.reward}€.`,
             header: 'Confirmation de validation',
@@ -257,24 +327,46 @@ export class TaskListComponent implements OnInit {
     }
 
     completeTask(task: Task) {
-        this.taskService.completeTask(task.id).subscribe(() => {
-            this.messageService.add({
-                severity: 'success',
-                summary: 'Succès',
-                detail: `Tâche complétée ! +${task.reward}€`
-            });
-            this.loadTasks();
+        if (!task.id) return;
+
+        this.taskService.completeTask(task.id).subscribe({
+            next: () => {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Succès',
+                    detail: `Tâche complétée ! +${task.reward}€`
+                });
+                this.loadTasks();
+            },
+            error: (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erreur',
+                    detail: 'Erreur lors de la complétion de la tâche'
+                });
+            }
         });
     }
 
     reopenTask(task: Task) {
-        this.taskService.reopenTask(task.id).subscribe(() => {
-            this.messageService.add({
-                severity: 'success',
-                summary: 'Succès',
-                detail: 'Tâche réouverte'
-            });
-            this.loadTasks();
+        if (!task.id) return;
+
+        this.taskService.reopenTask(task.id).subscribe({
+            next: () => {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Succès',
+                    detail: 'Tâche réouverte'
+                });
+                this.loadTasks();
+            },
+            error: (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erreur',
+                    detail: 'Erreur lors de la réouverture de la tâche'
+                });
+            }
         });
     }
 } 

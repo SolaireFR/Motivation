@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TaskService } from '../services/task.service';
 import { CreateTaskDto, UpdateTaskDto, TaskResponseDto } from '../dto/task.dto';
-import { Task } from '../models/task.model';
+import { Task } from '../schemas/task.schema';
 
 @ApiTags('tasks')
 @Controller('tasks')
@@ -12,7 +12,7 @@ export class TaskController {
   @Get()
   @ApiOperation({ summary: 'Récupérer toutes les tâches' })
   @ApiResponse({ status: 200, description: 'Liste des tâches', type: [TaskResponseDto] })
-  getAllTasks(): Task[] {
+  async getAllTasks(): Promise<Task[]> {
     return this.taskService.getAllTasks();
   }
 
@@ -20,7 +20,7 @@ export class TaskController {
   @ApiOperation({ summary: 'Récupérer une tâche par son ID' })
   @ApiResponse({ status: 200, description: 'La tâche', type: TaskResponseDto })
   @ApiResponse({ status: 404, description: 'Tâche non trouvée' })
-  getTaskById(@Param('id') id: string): Task {
+  async getTaskById(@Param('id') id: string): Promise<Task> {
     return this.taskService.getTaskById(id);
   }
 
@@ -28,35 +28,34 @@ export class TaskController {
   @ApiOperation({ summary: 'Créer une nouvelle tâche' })
   @ApiResponse({ status: 201, description: 'Tâche créée', type: TaskResponseDto })
   @ApiResponse({ status: 400, description: 'Données invalides' })
-  createTask(@Body() createTaskDto: CreateTaskDto): Task {
-    const { title, description, reward } = createTaskDto;
-    return this.taskService.createTask(title, description, reward);
+  async createTask(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
+    return this.taskService.createTask(createTaskDto);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @ApiOperation({ summary: 'Mettre à jour une tâche' })
   @ApiResponse({ status: 200, description: 'Tâche mise à jour', type: TaskResponseDto })
   @ApiResponse({ status: 404, description: 'Tâche non trouvée' })
-  updateTask(
+  async updateTask(
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
-  ): Task {
+  ): Promise<Task> {
     return this.taskService.updateTask(id, updateTaskDto);
   }
 
-  @Put(':id/complete')
+  @Post(':id/complete')
   @ApiOperation({ summary: 'Marquer une tâche comme terminée' })
   @ApiResponse({ status: 200, description: 'Tâche terminée', type: TaskResponseDto })
   @ApiResponse({ status: 404, description: 'Tâche non trouvée' })
-  completeTask(@Param('id') id: string): Task {
+  async completeTask(@Param('id') id: string): Promise<Task> {
     return this.taskService.completeTask(id);
   }
 
-  @Put(':id/reopen')
+  @Post(':id/reopen')
   @ApiOperation({ summary: 'Réouvrir une tâche terminée' })
   @ApiResponse({ status: 200, description: 'Tâche réouverte', type: TaskResponseDto })
   @ApiResponse({ status: 404, description: 'Tâche non trouvée' })
-  reopenTask(@Param('id') id: string): Task {
+  async reopenTask(@Param('id') id: string): Promise<Task> {
     return this.taskService.reopenTask(id);
   }
 
@@ -64,7 +63,7 @@ export class TaskController {
   @ApiOperation({ summary: 'Supprimer une tâche' })
   @ApiResponse({ status: 200, description: 'Tâche supprimée' })
   @ApiResponse({ status: 404, description: 'Tâche non trouvée' })
-  deleteTask(@Param('id') id: string): void {
-    this.taskService.deleteTask(id);
+  async deleteTask(@Param('id') id: string): Promise<void> {
+    return this.taskService.deleteTask(id);
   }
 } 

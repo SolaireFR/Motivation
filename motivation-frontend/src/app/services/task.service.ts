@@ -57,14 +57,24 @@ export class TaskService {
         );
     }
 
-    updateTask(id: number, taskData: Partial<Task>): Observable<Task> {
+    updateTask(id: string, taskData: Partial<Task>): Observable<Task> {
         // Si la récompense est mise à jour, assurons-nous qu'elle est un nombre positif
         if (taskData.reward !== undefined) {
             taskData.reward = Math.max(0, Number(taskData.reward) || 0);
         }
 
-        return this.http.patch<Task>(`${this.apiUrl}/${id}`, taskData).pipe(
+        // Nettoyer les données avant l'envoi
+        const cleanedData = {
+            title: taskData.title,
+            description: taskData.description || '',
+            importance: taskData.importance,
+            reward: taskData.reward
+        };
+
+        console.log('Envoi de la requête PATCH avec les données:', cleanedData);
+        return this.http.patch<Task>(`${this.apiUrl}/${id}`, cleanedData).pipe(
             tap(updatedTask => {
+                console.log('Réponse du serveur:', updatedTask);
                 const currentTasks = this.tasksSubject.value;
                 const index = currentTasks.findIndex(task => task.id === id);
                 if (index !== -1) {
@@ -75,7 +85,7 @@ export class TaskService {
         );
     }
 
-    deleteTask(id: number): Observable<void> {
+    deleteTask(id: string): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
             tap(() => {
                 const currentTasks = this.tasksSubject.value;
@@ -84,7 +94,7 @@ export class TaskService {
         );
     }
 
-    completeTask(id: number): Observable<Task> {
+    completeTask(id: string): Observable<Task> {
         return this.http.post<Task>(`${this.apiUrl}/${id}/complete`, {}).pipe(
             tap(updatedTask => {
                 const currentTasks = this.tasksSubject.value;
@@ -102,7 +112,7 @@ export class TaskService {
         );
     }
 
-    reopenTask(id: number): Observable<Task> {
+    reopenTask(id: string): Observable<Task> {
         return this.http.post<Task>(`${this.apiUrl}/${id}/reopen`, {}).pipe(
             tap(updatedTask => {
                 const currentTasks = this.tasksSubject.value;
@@ -115,7 +125,7 @@ export class TaskService {
         );
     }
 
-    getTaskById(id: number): Observable<Task> {
+    getTaskById(id: string): Observable<Task> {
         return this.http.get<Task>(`${this.apiUrl}/${id}`);
     }
 

@@ -6,7 +6,7 @@ export interface TaskHistory {
 export type TaskStatus = 'ACTIVE' | 'COMPLETED';
 
 export interface Task {
-    id: number;
+    id: string;
     title: string;
     description?: string;
     importance: 'LOW' | 'MEDIUM' | 'HIGH';
@@ -15,4 +15,5 @@ export interface Task {
     status: TaskStatus;
     createdAt: Date;
     updatedAt: Date;
+    completedAt?: Date;
 } 
