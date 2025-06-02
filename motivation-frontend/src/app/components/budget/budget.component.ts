@@ -9,7 +9,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ButtonComponent } from '../../shared/components/button.component';
 import { BudgetService } from '../../services/budget.service';
-import { Budget, Transaction } from '../../models/budget.model';
+import { Budget } from '../../models/budget.model';
 import { Icons, ButtonTexts } from '../../shared/ui-constants';
 
 @Component({
@@ -36,42 +36,40 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
                     <app-button 
                         [icon]="icons.plus"
                         [label]="texts.add"
-                        (onClick)="showNewExpenseDialog()"
+                        (onClick)="showNewEntryDialog()"
                     ></app-button>
                 </div>
             </div>
 
-            <p-table [value]="budget?.transactions || []" [tableStyle]="{'min-width': '50rem'}">
+            <p-table [value]="budget?.history || []" [tableStyle]="{'min-width': '50rem'}">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Date</th>
-                        <th>Type</th>
-                        <th>Description</th>
+                        <th>Titre</th>
                         <th>Montant</th>
                     </tr>
                 </ng-template>
-                <ng-template pTemplate="body" let-transaction>
-                    <tr [ngClass]="{'reward-transaction': transaction.type === 'REWARD', 'expense-transaction': transaction.type === 'EXPENSE'}">
-                        <td>{{transaction.date | date:'dd/MM/yyyy HH:mm'}}</td>
-                        <td>{{transaction.type === 'REWARD' ? 'Récompense' : 'Dépense'}}</td>
-                        <td>{{transaction.description}}</td>
-                        <td [ngClass]="{'text-success': transaction.type === 'REWARD', 'text-danger': transaction.type === 'EXPENSE'}">
-                            {{transaction.type === 'REWARD' ? '+' : '-'}}{{transaction.amount}}€
+                <ng-template pTemplate="body" let-entry>
+                    <tr [ngClass]="{'positive-amount': entry.amount > 0, 'negative-amount': entry.amount < 0}">
+                        <td>{{entry.createdAt | date:'dd/MM/yyyy HH:mm'}}</td>
+                        <td>{{entry.title}}</td>
+                        <td [ngClass]="{'text-success': entry.amount > 0, 'text-danger': entry.amount < 0}">
+                            {{entry.amount > 0 ? '+' : ''}}{{entry.amount}}€
                         </td>
                     </tr>
                 </ng-template>
             </p-table>
         </div>
 
-        <p-dialog [(visible)]="expenseDialog" header="Nouvelle dépense" [modal]="true" [style]="{width: '450px'}">
+        <p-dialog [(visible)]="entryDialog" header="Nouvelle entrée" [modal]="true" [style]="{width: '450px'}">
             <div class="grid formgrid p-fluid mt-3">
                 <div class="field col-12">
-                    <label for="amount">Montant (€)*</label>
-                    <p-inputNumber id="amount" [(ngModel)]="currentExpense.amount" [min]="0" [showButtons]="true" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="2"></p-inputNumber>
+                    <label for="title">Titre*</label>
+                    <input pInputText id="title" [(ngModel)]="currentEntry.title" required />
                 </div>
                 <div class="field col-12">
-                    <label for="description">Description*</label>
-                    <input pInputText id="description" [(ngModel)]="currentExpense.description" required />
+                    <label for="amount">Montant (€)*</label>
+                    <p-inputNumber id="amount" [(ngModel)]="currentEntry.amount" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="2"></p-inputNumber>
                 </div>
             </div>
             <ng-template pTemplate="footer">
@@ -85,17 +83,17 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
                     [icon]="icons.save"
                     [label]="texts.save"
                     type="success"
-                    (onClick)="saveExpense()"
+                    (onClick)="saveEntry()"
                 ></app-button>
             </ng-template>
         </p-dialog>
     `,
     styles: [`
-        .reward-transaction {
+        .positive-amount {
             background-color: var(--green-50);
         }
         
-        .expense-transaction {
+        .negative-amount {
             background-color: var(--red-50);
         }
 
@@ -114,10 +112,10 @@ export class BudgetComponent implements OnInit {
     icons = Icons;
     texts = ButtonTexts;
     budget: Budget | null = null;
-    expenseDialog = false;
-    currentExpense: { amount: number; description: string } = {
-        amount: 0,
-        description: ''
+    entryDialog = false;
+    currentEntry: { title: string; amount: number } = {
+        title: '',
+        amount: 0
     };
 
     constructor(
@@ -135,50 +133,51 @@ export class BudgetComponent implements OnInit {
         });
     }
 
-    showNewExpenseDialog() {
-        this.currentExpense = {
-            amount: 0,
-            description: ''
+    showNewEntryDialog() {
+        this.currentEntry = {
+            title: '',
+            amount: 0
         };
-        this.expenseDialog = true;
+        this.entryDialog = true;
     }
 
     hideDialog() {
-        this.expenseDialog = false;
-        this.currentExpense = {
-            amount: 0,
-            description: ''
+        this.entryDialog = false;
+        this.currentEntry = {
+            title: '',
+            amount: 0
         };
     }
 
-    saveExpense() {
-        if (!this.currentExpense.description || this.currentExpense.amount <= 0) {
+    saveEntry() {
+        if (!this.currentEntry.title || !this.currentEntry.amount) {
             this.messageService.add({
                 severity: 'error',
                 summary: 'Erreur',
-                detail: 'Veuillez remplir tous les champs correctement'
+                detail: 'Veuillez remplir tous les champs'
             });
             return;
         }
 
-        this.budgetService.addExpense(
-            this.currentExpense.amount,
-            this.currentExpense.description
+        this.budgetService.addHistoryEntry(
+            this.currentEntry.title,
+            this.currentEntry.amount
         ).subscribe({
             next: () => {
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Succès',
-                    detail: 'Dépense ajoutée'
+                    detail: 'Entrée ajoutée'
                 });
+                this.loadBudget();
                 this.hideDialog();
             },
             error: (error) => {
-                console.error('Erreur lors de l\'ajout de la dépense:', error);
+                console.error('Erreur lors de l\'ajout de l\'entrée:', error);
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Erreur',
-                    detail: 'Erreur lors de l\'ajout de la dépense'
+                    detail: 'Erreur lors de l\'ajout de l\'entrée'
                 });
             }
         });

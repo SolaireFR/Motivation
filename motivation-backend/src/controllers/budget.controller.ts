@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { BudgetService } from '../services/budget.service';
-import { BudgetResponseDto, TransactionResponseDto, AddTransactionDto } from '../dto/budget.dto';
+import { BudgetResponseDto, AddHistoryEntryDto, HistoryEntryResponseDto } from '../dto/budget.dto';
 
 @ApiTags('Budget')
 @Controller('budget')
@@ -15,31 +15,16 @@ export class BudgetController {
         return await this.budgetService.getBudget();
     }
 
-    @Get('total')
-    @ApiOperation({ summary: 'Obtenir le montant total' })
-    @ApiResponse({ status: 200, description: 'Montant total du budget' })
-    async getTotal(): Promise<{ total: number }> {
-        const budget = await this.budgetService.getBudget();
-        return { total: budget.total };
-    }
-
-    @Get('transactions')
-    @ApiOperation({ summary: "Obtenir l'historique des transactions" })
-    @ApiResponse({ status: 200, description: 'Liste des transactions', type: [TransactionResponseDto] })
-    async getTransactions(): Promise<TransactionResponseDto[]> {
-        return await this.budgetService.getTransactions();
-    }
-
-    @Post('transactions')
-    @ApiOperation({ summary: 'Ajouter une transaction' })
-    @ApiResponse({ status: 201, description: 'Transaction ajoutée', type: TransactionResponseDto })
+    @Post('history')
+    @ApiOperation({ summary: 'Ajouter une entrée dans l\'historique' })
+    @ApiResponse({ status: 201, description: 'Entrée ajoutée', type: HistoryEntryResponseDto })
     @ApiResponse({ status: 400, description: 'Données invalides' })
-    async addTransaction(@Body() transactionDto: AddTransactionDto): Promise<TransactionResponseDto> {
+    async addHistoryEntry(@Body() entryDto: AddHistoryEntryDto): Promise<HistoryEntryResponseDto> {
         try {
-            return await this.budgetService.addTransaction(transactionDto);
+            return await this.budgetService.addHistoryEntry(entryDto);
         } catch (error) {
             throw new HttpException(
-                error.message || "Erreur lors de l'ajout de la transaction",
+                error.message || "Erreur lors de l'ajout de l'entrée",
                 HttpStatus.BAD_REQUEST,
             );
         }

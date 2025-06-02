@@ -13,7 +13,6 @@ import { Budget } from './models/budget.model';
 import { ButtonComponent } from './shared/components/button.component';
 import { Icons, ButtonTexts } from './shared/ui-constants';
 import { BudgetService } from './services/budget.service';
-import { RewardService } from './services/reward.service';
 
 @Component({
     selector: 'app-root',
@@ -39,7 +38,7 @@ import { RewardService } from './services/reward.service';
             <div class="grid-container">
                 <div class="money-block card">
                     <h2 class="text-2xl mb-3">Cagnotte Totale</h2>
-                    <div class="total-amount mb-3" [ngClass]="{'negative': budget?.total < 0}">{{budget?.total || 0}}€</div>
+                    <div class="total-amount mb-3" [ngClass]="{'negative': (budget?.total ?? 0) < 0}">{{budget?.total || 0}}€</div>
                     <div class="money-actions mb-4">
                         <app-button
                             [icon]="icons.gift"
@@ -189,16 +188,12 @@ export class AppComponent implements OnInit {
 
     constructor(
         private budgetService: BudgetService,
-        private rewardService: RewardService,
         private messageService: MessageService
     ) {}
 
     ngOnInit() {
         this.budgetService.getBudget().subscribe(budget => {
             this.budget = budget;
-        });
-        this.rewardService.getRewards().subscribe(rewards => {
-            this.rewards = rewards;
         });
     }
 
@@ -228,7 +223,7 @@ export class AppComponent implements OnInit {
             return;
         }
 
-        this.rewardService.addReward(this.newReward.name, this.newReward.amount).subscribe({
+        this.budgetService.addHistoryEntry(this.newReward.name, this.newReward.amount).subscribe({
             next: () => {
                 this.messageService.add({
                     severity: 'success',
@@ -237,7 +232,7 @@ export class AppComponent implements OnInit {
                 });
                 this.hideRewardDialog();
             },
-            error: (error) => {
+            error: (error: unknown) => {
                 console.error('Erreur lors de l\'ajout de la récompense:', error);
                 this.messageService.add({
                     severity: 'error',

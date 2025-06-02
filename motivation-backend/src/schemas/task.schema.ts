@@ -6,28 +6,28 @@ export type TaskDocument = Task & Document;
 
 @Schema({ timestamps: true })
 export class Task {
-  _id: Types.ObjectId;
+    _id: Types.ObjectId;
 
-  @Prop({ required: true })
-  title: string;
+    @Prop({ required: true })
+    title: string;
 
-  @Prop()
-  description?: string;
+    @Prop()
+    description?: string;
 
-  @Prop({ required: true })
-  reward: number;
+    @Prop({ required: true })
+    reward: number;
 
-  @Prop({ required: true, enum: TaskStatus, default: TaskStatus.ACTIVE })
-  status: TaskStatus;
+    @Prop({ required: true, enum: TaskStatus, default: TaskStatus.ACTIVE })
+    status: TaskStatus;
 
-  @Prop({ required: true, enum: ['LOW', 'MEDIUM', 'HIGH'] })
-  importance: 'LOW' | 'MEDIUM' | 'HIGH';
+    @Prop({ required: true, enum: ['LOW', 'MEDIUM', 'HIGH'] })
+    importance: 'LOW' | 'MEDIUM' | 'HIGH';
 
-  @Prop()
-  completedAt?: Date;
+    @Prop()
+    completedAt?: Date;
 
-  createdAt?: Date;
-  updatedAt?: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
-export const TaskSchema = SchemaFactory.createForClass(Task); 
+export const TaskSchema = SchemaFactory.createForClass(Task);

@@ -1,16 +1,11 @@
-export interface Transaction {
-    _id: string;
+export interface HistoryEntry {
+    title: string;
     amount: number;
-    type: 'REWARD' | 'EXPENSE';
-    description: string;
-    taskId?: string;
-    date: Date;
+    createdAt: Date;
 }
 
 export interface Budget {
     _id: string;
     total: number;
-    transactions: Transaction[];
-    createdAt: Date;
-    updatedAt: Date;
+    history: HistoryEntry[];
 } 
