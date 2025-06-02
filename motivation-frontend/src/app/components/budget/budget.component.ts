@@ -69,7 +69,15 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
                 </div>
                 <div class="field col-12">
                     <label for="amount">Montant (€)*</label>
-                    <p-inputNumber id="amount" [(ngModel)]="currentEntry.amount" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="2"></p-inputNumber>
+                    <p-inputNumber 
+                        id="amount" 
+                        [(ngModel)]="currentEntry.amount" 
+                        mode="decimal" 
+                        [minFractionDigits]="0" 
+                        [maxFractionDigits]="2"
+                        [max]="0"
+                        placeholder="Entrez un montant négatif"
+                    ></p-inputNumber>
                 </div>
             </div>
             <ng-template pTemplate="footer">
@@ -78,7 +86,7 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
                     [label]="texts.cancel"
                     type="secondary"
                     (onClick)="hideDialog()"
-                ></app-button>
+                ></app-button> 
                 <app-button
                     [icon]="icons.save"
                     [label]="texts.save"
@@ -155,6 +163,15 @@ export class BudgetComponent implements OnInit {
                 severity: 'error',
                 summary: 'Erreur',
                 detail: 'Veuillez remplir tous les champs'
+            });
+            return;
+        }
+
+        if (this.currentEntry.amount >= 0) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Erreur',
+                detail: 'Le montant doit être négatif pour une récompense'
             });
             return;
         }

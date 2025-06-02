@@ -1,23 +1,25 @@
 export const Icons = {
     plus: '➕',
-    check: '✓',
-    edit: '✎',
-    trash: '🗑',
-    refresh: '↻',
+    check: '✅',
+    edit: '✏️',
+    trash: '🗑️',
+    refresh: '🔄',
     gift: '🎁',
-    times: '✕',
+    times: '❌',
     pencil: '✏️',
     save: '💾',
-    cancel: '❌'
+    cancel: '❌',
+    tasks: '📝',
+    money: '💰'
 };
 
 export const ButtonTexts = {
-    add: 'Add',
-    edit: 'Edit',
-    delete: 'Delete',
-    save: 'Save',
-    cancel: 'Cancel',
-    validate: 'Done',
-    reopen: 'Reopen',
-    reward: 'Reward'
+    add: 'Ajouter',
+    validate: 'Valider',
+    edit: 'Modifier',
+    delete: 'Supprimer',
+    reopen: 'Réouvrir',
+    reward: 'Récompense',
+    save: 'Enregistrer',
+    cancel: 'Annuler'
 }; 
