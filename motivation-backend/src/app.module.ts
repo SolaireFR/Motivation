@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TaskController } from './controllers/task.controller';
@@ -9,6 +9,7 @@ import { Task, TaskSchema } from './schemas/task.schema';
 import { Budget, BudgetSchema } from './schemas/budget.schema';
 import configuration from './config/configuration';
 import { validate } from './config/env.validation';
+import { LoggerMiddleware } from './middleware/logger.middleware';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { validate } from './config/env.validation';
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('mongodb.uri'),
       }),
       inject: [ConfigService],
@@ -32,4 +33,10 @@ import { validate } from './config/env.validation';
   controllers: [TaskController, BudgetController],
   providers: [TaskService, BudgetService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggerMiddleware)
+      .forRoutes('*');
+  }
+}

@@ -226,18 +226,20 @@ export class TaskListComponent implements OnInit {
         // S'assurer que la récompense est un nombre positif
         this.currentTask.reward = Math.max(0, Number(this.currentTask.reward));
 
-        if (this.editMode && this.currentTask.id) {
-            console.log('Mode édition - ID:', this.currentTask.id);
-            // Pour la mise à jour, on n'envoie que les champs modifiables
-            const updateData = {
-                title: this.currentTask.title,
-                description: this.currentTask.description || '',  // Envoyer une chaîne vide si null/undefined
-                importance: this.currentTask.importance,
-                reward: this.currentTask.reward
-            };
-            console.log('Données de mise à jour:', updateData);
+        // Préparer les données communes
+        const taskData = {
+            title: this.currentTask.title,
+            description: this.currentTask.description || '',
+            importance: this.currentTask.importance,
+            reward: this.currentTask.reward
+        };
 
-            this.taskService.updateTask(this.currentTask.id, updateData).subscribe({
+        if (this.editMode && this.currentTask.id) {
+            // Mode édition - PATCH
+            console.log('Mode édition - ID:', this.currentTask.id);
+            console.log('Données de mise à jour:', taskData);
+
+            this.taskService.updateTask(this.currentTask.id, taskData).subscribe({
                 next: (updatedTask) => {
                     console.log('Tâche mise à jour avec succès:', updatedTask);
                     this.messageService.add({
@@ -258,17 +260,11 @@ export class TaskListComponent implements OnInit {
                 }
             });
         } else {
+            // Mode création - POST
             console.log('Mode création');
-            // Pour la création, on n'envoie que les champs nécessaires
-            const createData = {
-                title: this.currentTask.title,
-                description: this.currentTask.description,
-                importance: this.currentTask.importance,
-                reward: this.currentTask.reward
-            };
-            console.log('Données de création:', createData);
+            console.log('Données de création:', taskData);
 
-            this.taskService.addTask(createData).subscribe({
+            this.taskService.addTask(taskData).subscribe({
                 next: (newTask) => {
                     console.log('Tâche créée avec succès:', newTask);
                     this.messageService.add({
@@ -294,20 +290,30 @@ export class TaskListComponent implements OnInit {
     deleteTask(task: Task) {
         if (!task.id) return;
         
-        this.taskService.deleteTask(task.id).subscribe({
-            next: () => {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Succès',
-                    detail: 'Tâche supprimée'
-                });
-                this.loadTasks();
-            },
-            error: (error) => {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Erreur',
-                    detail: 'Erreur lors de la suppression de la tâche'
+        this.confirmationService.confirm({
+            message: `Voulez-vous vraiment supprimer la tâche "${task.title}" ?`,
+            header: 'Confirmation de suppression',
+            icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'Oui, supprimer',
+            rejectLabel: 'Non, annuler',
+            accept: () => {
+                this.taskService.deleteTask(task.id!).subscribe({
+                    next: () => {
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Succès',
+                            detail: 'Tâche supprimée'
+                        });
+                        this.loadTasks();
+                    },
+                    error: (error) => {
+                        console.error('Erreur lors de la suppression:', error);
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Erreur',
+                            detail: 'Erreur lors de la suppression de la tâche'
+                        });
+                    }
                 });
             }
         });
