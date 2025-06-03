@@ -33,7 +33,7 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
     ],
     providers: [MessageService, ConfirmationService],
     template: `
-        <div class="card">
+        <div class="card task-card">
             <p-toast></p-toast>
             <p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
             
@@ -48,7 +48,7 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
                 </div>
             </div>
 
-            <p-table [value]="tasks" [tableStyle]="{'min-width': '50rem'}">
+            <p-table [value]="tasks" [tableStyle]="{'min-width': '100%'}" [scrollable]="true">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Titre</th>
@@ -144,6 +144,17 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
         </p-dialog>
     `,
     styles: [`
+        .task-card {
+            height: calc(100vh - 150px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        p-table {
+            flex: 1;
+            overflow: auto;
+        }
+
         .completed-task {
             background-color: var(--surface-ground);
         }
@@ -161,6 +172,20 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
             display: flex;
             gap: 0.5rem;
             justify-content: flex-end;
+        }
+
+        :host ::ng-deep .p-datatable {
+            height: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .task-card {
+                height: calc(100vh - 200px);
+            }
+
+            .actions-cell {
+                flex-wrap: wrap;
+            }
         }
     `]
 })

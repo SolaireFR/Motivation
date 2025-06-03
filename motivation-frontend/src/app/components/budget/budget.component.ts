@@ -27,7 +27,7 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
     ],
     providers: [MessageService],
     template: `
-        <div class="card">
+        <div class="card budget-card">
             <p-toast></p-toast>
             
             <div class="flex justify-content-between mb-3">
@@ -41,7 +41,7 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
                 </div>
             </div>
 
-            <p-table [value]="budget?.history || []" [tableStyle]="{'min-width': '50rem'}">
+            <p-table [value]="budget?.history || []" [tableStyle]="{'min-width': '100%'}" [scrollable]="true">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Date</th>
@@ -97,6 +97,17 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
         </p-dialog>
     `,
     styles: [`
+        .budget-card {
+            height: calc(100vh - 150px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        p-table {
+            flex: 1;
+            overflow: auto;
+        }
+
         .positive-amount {
             background-color: var(--green-50);
         }
@@ -113,6 +124,16 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
         .text-danger {
             color: var(--red-500);
             font-weight: bold;
+        }
+
+        :host ::ng-deep .p-datatable {
+            height: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .budget-card {
+                height: calc(100vh - 200px);
+            }
         }
     `]
 })

@@ -1,52 +1,45 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { ButtonComponent } from './shared/components/button.component';
-import { Icons, ButtonTexts } from './shared/ui-constants';
+import { TaskListComponent } from './components/task-list/task-list.component';
+import { BudgetComponent } from './components/budget/budget.component';
 
 @Component({
     selector: 'app-root',
     standalone: true,
     imports: [
         CommonModule,
-        RouterModule,
-        ButtonComponent
+        TaskListComponent,
+        BudgetComponent
     ],
     template: `
         <div class="container mx-auto p-4">
             <h1 class="text-3xl font-bold mb-4">Gestionnaire de Tâches</h1>
             
-            <nav class="mb-4">
-                <app-button 
-                    [icon]="icons.tasks"
-                    [label]="'Tâches'"
-                    [routerLink]="['/tasks']"
-                    routerLinkActive="active"
-                ></app-button>
-                <app-button 
-                    [icon]="icons.money"
-                    [label]="'Budget'"
-                    [routerLink]="['/budget']"
-                    routerLinkActive="active"
-                ></app-button>
-            </nav>
-
-            <router-outlet></router-outlet>
+            <div class="grid-container">
+                <app-budget></app-budget>
+                <app-task-list></app-task-list>
+            </div>
         </div>
     `,
     styles: [`
-        nav {
-            display: flex;
+        .grid-container {
+            display: grid;
             gap: 1rem;
-            margin-bottom: 2rem;
+            grid-template-columns: 1fr;
         }
 
-        :host ::ng-deep .active {
-            background-color: var(--primary-700) !important;
+        @media (min-width: 768px) {
+            .grid-container {
+                grid-template-columns: 300px 1fr;
+            }
+        }
+
+        :host ::ng-deep .card {
+            background: var(--surface-card);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
         }
     `]
 })
-export class AppComponent {
-    icons = Icons;
-    texts = ButtonTexts;
-} 
+export class AppComponent {} 
