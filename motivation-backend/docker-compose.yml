@@ -11,6 +11,7 @@ services:
       - MONGO_INITDB_DATABASE=${MONGODB_DATABASE}
     volumes:
       - mongodb_data:/data/db
+    restart: unless-stopped
 
 volumes:
   mongodb_data: 
