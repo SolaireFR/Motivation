@@ -12,7 +12,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { TaskService } from '../../services/task.service';
 import { Icons, ButtonTexts } from '../../shared/ui-constants';
-import { Task } from '../../models/task.model';
+import { Task, TaskImportance } from '../../models/task.model';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
@@ -111,7 +111,7 @@ export class TaskListComponent implements OnInit {
     showNewTaskDialog() {
         this.currentTask = {
             reward: 10, // Valeur par défaut pour la récompense
-            importance: 'MEDIUM' // Valeur par défaut pour l'importance
+            importance: TaskImportance.MEDIUM // Valeur par défaut pour l'importance
         };
         this.editMode = false;
         this.taskDialog = true;
@@ -144,7 +144,6 @@ export class TaskListComponent implements OnInit {
         // Préparer les données communes
         const taskData = {
             title: this.currentTask.title,
-            description: this.currentTask.description || '',
             importance: this.currentTask.importance,
             reward: this.currentTask.reward
         };

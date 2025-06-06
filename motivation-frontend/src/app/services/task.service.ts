@@ -30,7 +30,6 @@ export class TaskService {
 
     addTask(taskData: { 
         title: string; 
-        description?: string; 
         importance: 'LOW' | 'MEDIUM' | 'HIGH';
         reward: number;
     }): Observable<Task> {
@@ -57,7 +56,6 @@ export class TaskService {
         // Nettoyer les données avant l'envoi
         const cleanedData = {
             title: taskData.title,
-            description: taskData.description || '',
             importance: taskData.importance,
             reward: taskData.reward
         };

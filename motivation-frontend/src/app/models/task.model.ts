@@ -3,12 +3,17 @@ export enum TaskStatus {
     COMPLETED = 'COMPLETED'
 }
 
+export enum TaskImportance {
+    LOW = 'LOW',
+    MEDIUM = 'MEDIUM',
+    HIGH = 'HIGH'
+}
+
 export interface Task {
     _id: string;
     title: string;
-    description?: string;
     reward: number;
-    importance: 'LOW' | 'MEDIUM' | 'HIGH';
+    importance: TaskImportance;
     status: TaskStatus;
     createdAt: Date;
     completedAt?: Date;

@@ -6,7 +6,6 @@ export enum TaskStatus {
 export class Task {
   id: string;
   title: string;
-  description?: string;
   reward: number;
   status: TaskStatus;
   createdAt: Date;

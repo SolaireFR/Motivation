@@ -11,9 +11,6 @@ export class Task {
     @Prop({ required: true })
     title: string;
 
-    @Prop()
-    description?: string;
-
     @Prop({ required: true })
     reward: number;
 

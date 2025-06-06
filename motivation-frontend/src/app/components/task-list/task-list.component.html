@@ -13,7 +13,6 @@
         <ng-template pTemplate="header">
             <tr>
                 <th>Titre</th>
-                <th>Description</th>
                 <th>Importance</th>
                 <th>Récompense</th>
                 <th>Statut</th>
@@ -23,7 +22,6 @@
         <ng-template pTemplate="body" let-task>
             <tr [ngClass]="{'completed-task': task.status === 'COMPLETED'}">
                 <td>{{task.title}}</td>
-                <td>{{task.description}}</td>
                 <td>{{task.importance}}</td>
                 <td>{{task.reward}}€</td>
                 <td>
@@ -56,10 +54,6 @@
         <div class="field col-12">
             <label for="title">Titre*</label>
             <input pInputText id="title" [(ngModel)]="currentTask.title" required autofocus />
-        </div>
-        <div class="field col-12">
-            <label for="description">Description</label>
-            <textarea pInputTextarea id="description" [(ngModel)]="currentTask.description" rows="3"></textarea>
         </div>
         <div class="field col-12">
             <label for="importance">Importance*</label>

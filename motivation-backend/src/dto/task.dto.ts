@@ -10,11 +10,6 @@ export class CreateTaskDto {
   @IsString()
   title: string;
 
-  @ApiPropertyOptional({ description: 'Description détaillée de la tâche' })
-  @IsOptional()
-  @IsString()
-  description?: string;
-
   @ApiProperty({ description: 'Montant de la récompense', minimum: 0 })
   @IsNumber()
   @Min(0)
@@ -31,11 +26,6 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsString()
   title?: string;
-
-  @ApiPropertyOptional({ description: 'Description détaillée de la tâche' })
-  @IsOptional()
-  @IsString()
-  description?: string;
 
   @ApiPropertyOptional({ description: 'Montant de la récompense', minimum: 0 })
   @IsOptional()
@@ -66,9 +56,6 @@ export class TaskResponseDto {
 
   @ApiProperty()
   title: string;
-
-  @ApiPropertyOptional()
-  description?: string;
 
   @ApiProperty()
   reward: number;
