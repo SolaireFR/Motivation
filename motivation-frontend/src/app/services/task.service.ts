@@ -94,7 +94,7 @@ export class TaskService {
 
                 // Ajouter la récompense au budget
                 return this.budgetService.addHistoryEntry(
-                    `Récompense pour la tâche : ${updatedTask.title}`,
+                    updatedTask.title,
                     updatedTask.reward // La récompense est toujours positive
                 ).pipe(
                     map(() => updatedTask) // Retourner la tâche mise à jour

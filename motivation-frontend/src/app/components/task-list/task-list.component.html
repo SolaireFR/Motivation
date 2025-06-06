@@ -5,7 +5,7 @@
     <div class="flex justify-content-between mb-3">
         <h2>Gestion des tâches</h2>
         <div>
-            <p-button [label]="icons.plus + texts.add" (onClick)="showNewTaskDialog()"></p-button>
+            <p-button [label]="icons.plus + texts.task" (onClick)="showNewTaskDialog()"></p-button>
         </div>
     </div>
 
@@ -13,34 +13,32 @@
         <ng-template pTemplate="header">
             <tr>
                 <th>Titre</th>
-                <th>Importance</th>
                 <th>Récompense</th>
-                <th>Statut</th>
                 <th>Actions</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-task>
-            <tr [ngClass]="{'completed-task': task.status === 'COMPLETED'}">
-                <td>{{task.title}}</td>
-                <td>{{task.importance}}</td>
-                <td>{{task.reward}}€</td>
-                <td>
-                    <p-tag [severity]="task.status === 'COMPLETED' ? 'success' : 'info'"
-                        [value]="task.status === 'COMPLETED' ? 'Terminée' : 'Active'">
+            <tr>
+                <td [class]="{'bg-gray-100': task.status === 'COMPLETED'}">
+                    <p-tag [severity]="task.importance === TaskImportance.LOW ? 'secondary' : (task.importance === TaskImportance.MEDIUM ? 'warn' : 'danger')"
+                        [value]="task.title">
                     </p-tag>
                 </td>
-                <td class="actions-cell">
+                <td [class]="{'bg-gray-100': task.status === 'COMPLETED'}">{{task.reward}}€</td>
+                <td [class]="{'bg-gray-100': task.status === 'COMPLETED'}" class="actions-cell">
                     <ng-container *ngIf="task.status === 'ACTIVE'">
-                        <p-button [label]="icons.check + texts.validate" type="success"
+                        <p-button [label]="icons.check" type="success"
                             tooltip="Valider la tâche" (onClick)="confirmTaskCompletion(task)"></p-button>
-                        <p-button [label]="icons.edit + texts.edit" tooltip="Modifier la tâche"
+                        <p-button [label]="icons.edit" tooltip="Modifier la tâche"
                             (onClick)="editTask(task)"></p-button>
-                        <p-button [label]="icons.trash + texts.delete" type="danger"
+                        <p-button [label]="icons.trash" type="danger"
                             tooltip="Supprimer la tâche" (onClick)="deleteTask(task)"></p-button>
                     </ng-container>
                     <ng-container *ngIf="task.status === 'COMPLETED'">
-                        <p-button [label]="icons.refresh + texts.reopen" type="secondary"
+                        <p-button [label]="icons.refresh" type="secondary"
                             tooltip="Réouvrir la tâche" (onClick)="reopenTask(task)"></p-button>
+                        <p-button [label]="icons.trash" type="danger"
+                            tooltip="Supprimer la tâche" (onClick)="deleteTask(task)"></p-button>
                     </ng-container>
                 </td>
             </tr>
@@ -48,23 +46,22 @@
     </p-table>
 </div>
 
-<p-dialog [(visible)]="taskDialog" [header]="editMode ? 'Modifier la tâche' : 'Nouvelle tâche'" [modal]="true"
-    [style]="{width: '450px'}">
-    <div class="grid formgrid p-fluid mt-3">
-        <div class="field col-12">
-            <label for="title">Titre*</label>
-            <input pInputText id="title" [(ngModel)]="currentTask.title" required autofocus />
-        </div>
-        <div class="field col-12">
-            <label for="importance">Importance*</label>
-            <p-dropdown id="importance" [options]="importanceLevels" appendTo="body"
-                [(ngModel)]="currentTask.importance" placeholder="Sélectionner l'importance"></p-dropdown>
-        </div>
-        <div class="field col-12">
-            <label for="reward">Récompense (€)*</label>
-            <p-inputNumber id="reward" [(ngModel)]="currentTask.reward" [min]="0" [showButtons]="true" mode="decimal"
+<p-dialog [(visible)]="taskDialog" [header]="editMode ? 'Modifier la tâche' : 'Nouvelle tâche'" [modal]="true" [styleClass]="'w-full md:w-max'">
+    <div class="flex flex-col gap-3 p-3">
+        <p-floatlabel class="w-full md:w-max" variant="on">
+            <input pInputText class="w-full" id="title" [(ngModel)]="currentTask.title" required />
+            <label for="title">Titre</label>
+        </p-floatlabel>
+        <p-floatlabel class="w-full md:w-max" variant="on">
+            <p-select class="w-full" id="importance" [options]="importanceLevels" appendTo="body" (onChange)="importanceChanged($event)"
+                [(ngModel)]="currentTask.importance"></p-select>
+            <label for="importance">Priorité</label>
+        </p-floatlabel>
+        <p-floatlabel class="w-full md:w-max" variant="on">
+            <p-inputNumber class="w-full" id="reward" [(ngModel)]="currentTask.reward" [min]="0" [showButtons]="true" mode="decimal"
                 [minFractionDigits]="0" [maxFractionDigits]="2"></p-inputNumber>
-        </div>
+            <label for="reward">Récompense (+€)</label>
+        </p-floatlabel>
     </div>
     <ng-template pTemplate="footer">
         <p-button [label]="icons.cancel + texts.cancel" type="secondary" (onClick)="hideDialog()"></p-button>

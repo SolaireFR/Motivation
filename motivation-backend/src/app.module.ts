@@ -34,7 +34,7 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
     providers: [TaskService, BudgetService],
 })
 export class AppModule implements NestModule {
-    configure(consumer: MiddlewareConsumer) {
+    configure(consumer: MiddlewareConsumer): void {
         consumer.apply(LoggerMiddleware).forRoutes('*');
     }
 }

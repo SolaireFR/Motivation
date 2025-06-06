@@ -20,6 +20,7 @@ export const ButtonTexts = {
     delete: 'Supprimer',
     reopen: 'Réouvrir',
     reward: 'Récompense',
+    task: 'Tâche',
     save: 'Enregistrer',
     cancel: 'Annuler'
 }; 

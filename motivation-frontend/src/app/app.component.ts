@@ -15,25 +15,13 @@ import { BudgetComponent } from './components/budget/budget.component';
         <div class="container mx-auto p-4">
             <h1 class="text-3xl font-bold mb-4">Gestionnaire de Tâches</h1>
             
-            <div class="grid-container">
-                <app-budget></app-budget>
-                <app-task-list></app-task-list>
+            <div class="grid grid-cols-1 md:grid-cols-8 gap-4">
+                <app-budget class="col-span-3" />
+                <app-task-list class="col-span-5" />
             </div>
         </div>
     `,
     styles: [`
-        .grid-container {
-            display: grid;
-            gap: 1rem;
-            grid-template-columns: 1fr;
-        }
-
-        @media (min-width: 768px) {
-            .grid-container {
-                grid-template-columns: 300px 1fr;
-            }
-        }
-
         :host ::ng-deep .card {
             background: var(--surface-card);
             padding: 1.5rem;

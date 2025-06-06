@@ -11,6 +11,7 @@ import { Budget } from '../../models/budget.model';
 import { BudgetService } from '../../services/budget.service';
 import { Icons, ButtonTexts } from '../../shared/ui-constants';
 import { ButtonModule } from 'primeng/button';
+import { FloatLabelModule } from 'primeng/floatlabel';
 
 @Component({
     selector: 'app-budget',
@@ -24,12 +25,12 @@ import { ButtonModule } from 'primeng/button';
         InputNumberModule,
         ToastModule,
         ButtonModule,
+        FloatLabelModule,
     ],
     providers: [MessageService],
     templateUrl: './budget.component.html',
     styles: [`
         .budget-card {
-            height: calc(100vh - 150px);
             display: flex;
             flex-direction: column;
         }
@@ -59,12 +60,6 @@ import { ButtonModule } from 'primeng/button';
 
         :host ::ng-deep .p-datatable {
             height: 100%;
-        }
-
-        @media (max-width: 768px) {
-            .budget-card {
-                height: calc(100vh - 200px);
-            }
         }
     `]
 })

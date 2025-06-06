@@ -4,7 +4,7 @@ import { TaskService } from '../services/task.service';
 import { CreateTaskDto, UpdateTaskDto, TaskResponseDto } from '../dto/task.dto';
 import { Task } from '../schemas/task.schema';
 
-@ApiTags('tasks')
+@ApiTags('Taches')
 @Controller('tasks')
 export class TaskController {
     constructor(private readonly taskService: TaskService) {}

@@ -14,6 +14,8 @@ import { TaskService } from '../../services/task.service';
 import { Icons, ButtonTexts } from '../../shared/ui-constants';
 import { Task, TaskImportance } from '../../models/task.model';
 import { ButtonModule } from 'primeng/button';
+import { SelectChangeEvent, SelectModule } from 'primeng/select';
+import { FloatLabelModule } from 'primeng/floatlabel';
 
 @Component({
     selector: 'app-task-list',
@@ -25,17 +27,17 @@ import { ButtonModule } from 'primeng/button';
         DialogModule,
         InputTextModule,
         InputNumberModule,
-        DropdownModule,
+        SelectModule,
         ToastModule,
         TagModule,
         ButtonModule,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        FloatLabelModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './task-list.component.html',
     styles: [`
         .task-card {
-            height: calc(100vh - 150px);
             display: flex;
             flex-direction: column;
         }
@@ -43,10 +45,6 @@ import { ButtonModule } from 'primeng/button';
         p-table {
             flex: 1;
             overflow: auto;
-        }
-
-        .completed-task {
-            background-color: var(--surface-ground);
         }
         
         .completed-task td {
@@ -69,10 +67,6 @@ import { ButtonModule } from 'primeng/button';
         }
 
         @media (max-width: 768px) {
-            .task-card {
-                height: calc(100vh - 200px);
-            }
-
             .actions-cell {
                 flex-wrap: wrap;
             }
@@ -91,6 +85,8 @@ export class TaskListComponent implements OnInit {
         { label: 'Moyenne', value: 'MEDIUM' },
         { label: 'Haute', value: 'HIGH' }
     ];
+
+    TaskImportance = TaskImportance;
 
     constructor(
         private taskService: TaskService,
@@ -291,5 +287,11 @@ export class TaskListComponent implements OnInit {
                 });
             }
         });
+    }
+
+    importanceChanged(event: SelectChangeEvent) {
+        const newImportance = event.value;
+        const newReward = newImportance === TaskImportance.HIGH ? 20 : newImportance === TaskImportance.MEDIUM ? 10 : 5;
+        this.currentTask.reward = newReward;
     }
 } 

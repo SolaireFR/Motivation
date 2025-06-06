@@ -27,17 +27,17 @@ export class BudgetController {
         }
     }
 
-    @Post('reset')
-    @ApiOperation({ summary: 'Réinitialiser le budget' })
-    @ApiResponse({ status: 200, description: 'Budget réinitialisé', type: BudgetResponseDto })
-    async resetBudget(): Promise<BudgetResponseDto> {
-        try {
-            return await this.budgetService.resetBudget();
-        } catch (error) {
-            throw new HttpException(
-                error.message || 'Erreur lors de la réinitialisation du budget',
-                HttpStatus.INTERNAL_SERVER_ERROR,
-            );
-        }
-    }
+    // @Post('reset')
+    // @ApiOperation({ summary: 'Réinitialiser le budget' })
+    // @ApiResponse({ status: 200, description: 'Budget réinitialisé', type: BudgetResponseDto })
+    // async resetBudget(): Promise<BudgetResponseDto> {
+    //     try {
+    //         return await this.budgetService.resetBudget();
+    //     } catch (error) {
+    //         throw new HttpException(
+    //             error.message || 'Erreur lors de la réinitialisation du budget',
+    //             HttpStatus.INTERNAL_SERVER_ERROR,
+    //         );
+    //     }
+    // }
 }
