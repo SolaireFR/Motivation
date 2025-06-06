@@ -7,10 +7,10 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { ButtonComponent } from '../../shared/components/button.component';
-import { BudgetService } from '../../services/budget.service';
 import { Budget } from '../../models/budget.model';
+import { BudgetService } from '../../services/budget.service';
 import { Icons, ButtonTexts } from '../../shared/ui-constants';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
     selector: 'app-budget',
@@ -23,79 +23,10 @@ import { Icons, ButtonTexts } from '../../shared/ui-constants';
         InputTextModule,
         InputNumberModule,
         ToastModule,
-        ButtonComponent
+        ButtonModule,
     ],
     providers: [MessageService],
-    template: `
-        <div class="card budget-card">
-            <p-toast></p-toast>
-            
-            <div class="flex justify-content-between mb-3">
-                <h2>Budget : {{budget?.total || 0}}€</h2>
-                <div>
-                    <app-button 
-                        [icon]="icons.plus"
-                        [label]="texts.add"
-                        (onClick)="showNewEntryDialog()"
-                    ></app-button>
-                </div>
-            </div>
-
-            <p-table [value]="budget?.history || []" [tableStyle]="{'min-width': '100%'}" [scrollable]="true">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th>Date</th>
-                        <th>Titre</th>
-                        <th>Montant</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-entry>
-                    <tr [ngClass]="{'positive-amount': entry.amount > 0, 'negative-amount': entry.amount < 0}">
-                        <td>{{entry.createdAt | date:'dd/MM/yyyy HH:mm'}}</td>
-                        <td>{{entry.title}}</td>
-                        <td [ngClass]="{'text-success': entry.amount > 0, 'text-danger': entry.amount < 0}">
-                            {{entry.amount > 0 ? '+' : ''}}{{entry.amount}}€
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </div>
-
-        <p-dialog [(visible)]="entryDialog" header="Nouvelle entrée" [modal]="true" [style]="{width: '450px'}">
-            <div class="grid formgrid p-fluid mt-3">
-                <div class="field col-12">
-                    <label for="title">Titre*</label>
-                    <input pInputText id="title" [(ngModel)]="currentEntry.title" required />
-                </div>
-                <div class="field col-12">
-                    <label for="amount">Montant (€)*</label>
-                    <p-inputNumber 
-                        id="amount" 
-                        [(ngModel)]="currentEntry.amount" 
-                        mode="decimal" 
-                        [minFractionDigits]="0" 
-                        [maxFractionDigits]="2"
-                        [max]="0"
-                        placeholder="Entrez un montant négatif"
-                    ></p-inputNumber>
-                </div>
-            </div>
-            <ng-template pTemplate="footer">
-                <app-button
-                    [icon]="icons.cancel"
-                    [label]="texts.cancel"
-                    type="secondary"
-                    (onClick)="hideDialog()"
-                ></app-button> 
-                <app-button
-                    [icon]="icons.save"
-                    [label]="texts.save"
-                    type="success"
-                    (onClick)="saveEntry()"
-                ></app-button>
-            </ng-template>
-        </p-dialog>
-    `,
+    templateUrl: './budget.component.html',
     styles: [`
         .budget-card {
             height: calc(100vh - 150px);

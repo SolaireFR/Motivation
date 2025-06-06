@@ -1,0 +1,79 @@
+<div class="card task-card">
+    <p-toast></p-toast>
+    <p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+
+    <div class="flex justify-content-between mb-3">
+        <h2>Gestion des tâches</h2>
+        <div>
+            <p-button [label]="icons.plus + texts.add" (onClick)="showNewTaskDialog()"></p-button>
+        </div>
+    </div>
+
+    <p-table [value]="tasks" [tableStyle]="{'min-width': '100%'}" [scrollable]="true">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Titre</th>
+                <th>Description</th>
+                <th>Importance</th>
+                <th>Récompense</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-task>
+            <tr [ngClass]="{'completed-task': task.status === 'COMPLETED'}">
+                <td>{{task.title}}</td>
+                <td>{{task.description}}</td>
+                <td>{{task.importance}}</td>
+                <td>{{task.reward}}€</td>
+                <td>
+                    <p-tag [severity]="task.status === 'COMPLETED' ? 'success' : 'info'"
+                        [value]="task.status === 'COMPLETED' ? 'Terminée' : 'Active'">
+                    </p-tag>
+                </td>
+                <td class="actions-cell">
+                    <ng-container *ngIf="task.status === 'ACTIVE'">
+                        <p-button [label]="icons.check + texts.validate" type="success"
+                            tooltip="Valider la tâche" (onClick)="confirmTaskCompletion(task)"></p-button>
+                        <p-button [label]="icons.edit + texts.edit" tooltip="Modifier la tâche"
+                            (onClick)="editTask(task)"></p-button>
+                        <p-button [label]="icons.trash + texts.delete" type="danger"
+                            tooltip="Supprimer la tâche" (onClick)="deleteTask(task)"></p-button>
+                    </ng-container>
+                    <ng-container *ngIf="task.status === 'COMPLETED'">
+                        <p-button [label]="icons.refresh + texts.reopen" type="secondary"
+                            tooltip="Réouvrir la tâche" (onClick)="reopenTask(task)"></p-button>
+                    </ng-container>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-dialog [(visible)]="taskDialog" [header]="editMode ? 'Modifier la tâche' : 'Nouvelle tâche'" [modal]="true"
+    [style]="{width: '450px'}">
+    <div class="grid formgrid p-fluid mt-3">
+        <div class="field col-12">
+            <label for="title">Titre*</label>
+            <input pInputText id="title" [(ngModel)]="currentTask.title" required autofocus />
+        </div>
+        <div class="field col-12">
+            <label for="description">Description</label>
+            <textarea pInputTextarea id="description" [(ngModel)]="currentTask.description" rows="3"></textarea>
+        </div>
+        <div class="field col-12">
+            <label for="importance">Importance*</label>
+            <p-dropdown id="importance" [options]="importanceLevels" appendTo="body"
+                [(ngModel)]="currentTask.importance" placeholder="Sélectionner l'importance"></p-dropdown>
+        </div>
+        <div class="field col-12">
+            <label for="reward">Récompense (€)*</label>
+            <p-inputNumber id="reward" [(ngModel)]="currentTask.reward" [min]="0" [showButtons]="true" mode="decimal"
+                [minFractionDigits]="0" [maxFractionDigits]="2"></p-inputNumber>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button [label]="icons.cancel + texts.cancel" type="secondary" (onClick)="hideDialog()"></p-button>
+        <p-button [label]="icons.save + texts.save" type="success" (onClick)="saveTask()"></p-button>
+    </ng-template>
+</p-dialog>

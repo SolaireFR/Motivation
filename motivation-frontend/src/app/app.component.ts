@@ -9,7 +9,7 @@ import { BudgetComponent } from './components/budget/budget.component';
     imports: [
         CommonModule,
         TaskListComponent,
-        BudgetComponent
+        BudgetComponent,
     ],
     template: `
         <div class="container mx-auto p-4">
