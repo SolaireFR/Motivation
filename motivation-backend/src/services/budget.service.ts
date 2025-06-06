@@ -6,9 +6,7 @@ import { AddHistoryEntryDto, BudgetResponseDto, HistoryEntryResponseDto } from '
 
 @Injectable()
 export class BudgetService {
-    constructor(
-        @InjectModel(Budget.name) private budgetModel: Model<BudgetDocument>
-    ) {
+    constructor(@InjectModel(Budget.name) private budgetModel: Model<BudgetDocument>) {
         this.initializeBudget();
     }
 
@@ -18,50 +16,50 @@ export class BudgetService {
             await this.budgetModel.create({
                 _id: new Types.ObjectId(),
                 total: 0,
-                history: []
+                history: [],
             });
         }
     }
 
     async getBudget(): Promise<BudgetResponseDto> {
         const budget = await this.budgetModel.findOne().lean().exec();
-        
+
         if (!budget) {
             const newBudget = await this.budgetModel.create({
                 _id: new Types.ObjectId(),
                 total: 0,
-                history: []
+                history: [],
             });
-            
+
             const createdBudget = newBudget.toObject();
             return {
                 _id: createdBudget._id,
                 total: createdBudget.total,
-                history: createdBudget.history
+                history: createdBudget.history,
             };
         }
 
         return {
             _id: budget._id,
             total: budget.total,
-            history: budget.history
+            history: budget.history,
         };
     }
 
     async addHistoryEntry(entryDto: AddHistoryEntryDto): Promise<HistoryEntryResponseDto> {
         const budget = await this.budgetModel.findOne().exec();
-        
+
         if (!budget) {
             const newBudget = await this.budgetModel.create({
                 _id: new Types.ObjectId(),
                 total: 0,
-                history: []
+                history: [],
             });
 
             const historyEntry: HistoryEntry = {
                 title: entryDto.title,
                 amount: entryDto.amount,
-                createdAt: new Date()
+                createdAt: new Date(),
             };
 
             newBudget.history.unshift(historyEntry);
@@ -71,14 +69,14 @@ export class BudgetService {
             return {
                 title: historyEntry.title,
                 amount: historyEntry.amount,
-                createdAt: historyEntry.createdAt
+                createdAt: historyEntry.createdAt,
             };
         }
 
         const historyEntry: HistoryEntry = {
             title: entryDto.title,
             amount: entryDto.amount,
-            createdAt: new Date()
+            createdAt: new Date(),
         };
 
         budget.history.unshift(historyEntry);
@@ -88,25 +86,25 @@ export class BudgetService {
         return {
             title: historyEntry.title,
             amount: historyEntry.amount,
-            createdAt: historyEntry.createdAt
+            createdAt: historyEntry.createdAt,
         };
     }
 
     async resetBudget(): Promise<BudgetResponseDto> {
         const budget = await this.budgetModel.findOne().exec();
-        
+
         if (!budget) {
             const newBudget = await this.budgetModel.create({
                 _id: new Types.ObjectId(),
                 total: 0,
-                history: []
+                history: [],
             });
-            
+
             const createdBudget = newBudget.toObject();
             return {
                 _id: createdBudget._id,
                 total: createdBudget.total,
-                history: createdBudget.history
+                history: createdBudget.history,
             };
         }
 
@@ -117,7 +115,7 @@ export class BudgetService {
         return {
             _id: budget._id,
             total: budget.total,
-            history: budget.history
+            history: budget.history,
         };
     }
-} 
+}

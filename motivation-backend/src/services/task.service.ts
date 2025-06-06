@@ -7,9 +7,7 @@ import { CreateTaskDto, UpdateTaskDto } from '../dto/task.dto';
 
 @Injectable()
 export class TaskService {
-    constructor(
-        @InjectModel(Task.name) private taskModel: Model<TaskDocument>
-    ) {}
+    constructor(@InjectModel(Task.name) private taskModel: Model<TaskDocument>) {}
 
     async getAllTasks(): Promise<Task[]> {
         return this.taskModel.find().exec();
@@ -32,7 +30,7 @@ export class TaskService {
             const createdTask = new this.taskModel({
                 ...createTaskDto,
                 status: TaskStatus.ACTIVE,
-                reward: Math.max(0, Number(createTaskDto.reward) || 0)
+                reward: Math.max(0, Number(createTaskDto.reward) || 0),
             });
             return await createdTask.save();
         } catch (error) {
@@ -52,13 +50,9 @@ export class TaskService {
             }
 
             const updatedTask = await this.taskModel
-                .findByIdAndUpdate(
-                    id,
-                    { ...updateTaskDto },
-                    { new: true, runValidators: true }
-                )
+                .findByIdAndUpdate(id, { ...updateTaskDto }, { new: true, runValidators: true })
                 .exec();
-                
+
             if (!updatedTask) {
                 throw new NotFoundException(`La tâche avec l'ID ${id} n'a pas été trouvée`);
             }
@@ -80,10 +74,10 @@ export class TaskService {
         if (task.status === TaskStatus.COMPLETED) {
             throw new BadRequestException('La tâche est déjà complétée');
         }
-        
+
         return this.updateTask(id, {
             status: TaskStatus.COMPLETED,
-            completedAt: new Date()
+            completedAt: new Date(),
         });
     }
 
@@ -96,10 +90,10 @@ export class TaskService {
         if (task.status === TaskStatus.ACTIVE) {
             throw new BadRequestException('La tâche est déjà active');
         }
-        
+
         return this.updateTask(id, {
             status: TaskStatus.ACTIVE,
-            completedAt: undefined
+            completedAt: undefined,
         });
     }
 
@@ -113,4 +107,4 @@ export class TaskService {
             throw new NotFoundException(`La tâche avec l'ID ${id} n'a pas été trouvée`);
         }
     }
-} 
+}

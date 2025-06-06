@@ -16,17 +16,14 @@ export class BudgetController {
     }
 
     @Post('history')
-    @ApiOperation({ summary: 'Ajouter une entrée dans l\'historique' })
+    @ApiOperation({ summary: "Ajouter une entrée dans l'historique" })
     @ApiResponse({ status: 201, description: 'Entrée ajoutée', type: HistoryEntryResponseDto })
     @ApiResponse({ status: 400, description: 'Données invalides' })
     async addHistoryEntry(@Body() entryDto: AddHistoryEntryDto): Promise<HistoryEntryResponseDto> {
         try {
             return await this.budgetService.addHistoryEntry(entryDto);
         } catch (error) {
-            throw new HttpException(
-                error.message || "Erreur lors de l'ajout de l'entrée",
-                HttpStatus.BAD_REQUEST,
-            );
+            throw new HttpException(error.message || "Erreur lors de l'ajout de l'entrée", HttpStatus.BAD_REQUEST);
         }
     }
 

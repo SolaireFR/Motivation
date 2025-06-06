@@ -12,7 +12,7 @@ export class LoggerMiddleware implements NestMiddleware {
 
         // Log de la requête entrante
         this.logger.log(`Requête entrante - ${method} ${originalUrl}`);
-        
+
         // Vérifier si le body existe et n'est pas vide
         if (body && typeof body === 'object' && Object.keys(body).length > 0) {
             this.logger.debug(`Corps de la requête: ${JSON.stringify(body, null, 2)}`);
@@ -24,7 +24,7 @@ export class LoggerMiddleware implements NestMiddleware {
             const responseTime = Date.now() - startTime;
 
             // Log de la réponse avec code couleur selon le statut
-            const logMessage = 
+            const logMessage =
                 `${method} ${originalUrl} ${statusCode} ${contentLength || 0}b - ${responseTime}ms\n` +
                 `IP: ${ip} - User Agent: ${userAgent}`;
 
@@ -42,4 +42,4 @@ export class LoggerMiddleware implements NestMiddleware {
 
         next();
     }
-} 
+}

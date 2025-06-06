@@ -5,73 +5,73 @@ import { Type } from 'class-transformer';
 import { Types } from 'mongoose';
 
 export class CreateTaskDto {
-  @ApiProperty({ description: 'Titre de la tâche' })
-  @IsNotEmpty()
-  @IsString()
-  title: string;
+    @ApiProperty({ description: 'Titre de la tâche' })
+    @IsNotEmpty()
+    @IsString()
+    title: string;
 
-  @ApiProperty({ description: 'Montant de la récompense', minimum: 0 })
-  @IsNumber()
-  @Min(0)
-  reward: number;
+    @ApiProperty({ description: 'Montant de la récompense', minimum: 0 })
+    @IsNumber()
+    @Min(0)
+    reward: number;
 
-  @ApiProperty({ description: "Niveau d'importance de la tâche", enum: ['LOW', 'MEDIUM', 'HIGH'] })
-  @IsNotEmpty()
-  @IsString()
-  importance: 'LOW' | 'MEDIUM' | 'HIGH';
+    @ApiProperty({ description: "Niveau d'importance de la tâche", enum: ['LOW', 'MEDIUM', 'HIGH'] })
+    @IsNotEmpty()
+    @IsString()
+    importance: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
 export class UpdateTaskDto {
-  @ApiPropertyOptional({ description: 'Titre de la tâche' })
-  @IsOptional()
-  @IsString()
-  title?: string;
+    @ApiPropertyOptional({ description: 'Titre de la tâche' })
+    @IsOptional()
+    @IsString()
+    title?: string;
 
-  @ApiPropertyOptional({ description: 'Montant de la récompense', minimum: 0 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  reward?: number;
+    @ApiPropertyOptional({ description: 'Montant de la récompense', minimum: 0 })
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    reward?: number;
 
-  @ApiPropertyOptional({ enum: TaskStatus, description: 'Statut de la tâche' })
-  @IsOptional()
-  @IsEnum(TaskStatus)
-  status?: TaskStatus;
+    @ApiPropertyOptional({ enum: TaskStatus, description: 'Statut de la tâche' })
+    @IsOptional()
+    @IsEnum(TaskStatus)
+    status?: TaskStatus;
 
-  @ApiPropertyOptional({ description: "Niveau d'importance de la tâche", enum: ['LOW', 'MEDIUM', 'HIGH'] })
-  @IsOptional()
-  @IsString()
-  importance?: 'LOW' | 'MEDIUM' | 'HIGH';
+    @ApiPropertyOptional({ description: "Niveau d'importance de la tâche", enum: ['LOW', 'MEDIUM', 'HIGH'] })
+    @IsOptional()
+    @IsString()
+    importance?: 'LOW' | 'MEDIUM' | 'HIGH';
 
-  @ApiPropertyOptional({ description: 'Date de complétion de la tâche' })
-  @IsOptional()
-  @IsDate()
-  @Type(() => Date)
-  completedAt?: Date;
+    @ApiPropertyOptional({ description: 'Date de complétion de la tâche' })
+    @IsOptional()
+    @IsDate()
+    @Type(() => Date)
+    completedAt?: Date;
 }
 
 export class TaskResponseDto {
-  @ApiProperty()
-  _id: Types.ObjectId;
+    @ApiProperty()
+    _id: Types.ObjectId;
 
-  @ApiProperty()
-  title: string;
+    @ApiProperty()
+    title: string;
 
-  @ApiProperty()
-  reward: number;
+    @ApiProperty()
+    reward: number;
 
-  @ApiProperty({ enum: TaskStatus })
-  status: TaskStatus;
+    @ApiProperty({ enum: TaskStatus })
+    status: TaskStatus;
 
-  @ApiProperty({ enum: ['LOW', 'MEDIUM', 'HIGH'] })
-  importance: 'LOW' | 'MEDIUM' | 'HIGH';
+    @ApiProperty({ enum: ['LOW', 'MEDIUM', 'HIGH'] })
+    importance: 'LOW' | 'MEDIUM' | 'HIGH';
 
-  @ApiProperty()
-  createdAt: Date;
+    @ApiProperty()
+    createdAt: Date;
 
-  @ApiPropertyOptional()
-  completedAt?: Date;
+    @ApiPropertyOptional()
+    completedAt?: Date;
 
-  @ApiProperty()
-  updatedAt: Date;
-} 
+    @ApiProperty()
+    updatedAt: Date;
+}

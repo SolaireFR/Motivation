@@ -27,4 +27,4 @@ export class Budget {
     history: HistoryEntry[];
 }
 
-export const BudgetSchema = SchemaFactory.createForClass(Budget); 
+export const BudgetSchema = SchemaFactory.createForClass(Budget);

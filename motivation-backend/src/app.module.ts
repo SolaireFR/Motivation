@@ -12,31 +12,29 @@ import { validate } from './config/env.validation';
 import { LoggerMiddleware } from './middleware/logger.middleware';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: [configuration],
-      validate,
-    }),
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>('mongodb.uri'),
-      }),
-      inject: [ConfigService],
-    }),
-    MongooseModule.forFeature([
-      { name: Task.name, schema: TaskSchema },
-      { name: Budget.name, schema: BudgetSchema }
-    ])
-  ],
-  controllers: [TaskController, BudgetController],
-  providers: [TaskService, BudgetService],
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+            load: [configuration],
+            validate,
+        }),
+        MongooseModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: (configService: ConfigService) => ({
+                uri: configService.get<string>('mongodb.uri'),
+            }),
+            inject: [ConfigService],
+        }),
+        MongooseModule.forFeature([
+            { name: Task.name, schema: TaskSchema },
+            { name: Budget.name, schema: BudgetSchema },
+        ]),
+    ],
+    controllers: [TaskController, BudgetController],
+    providers: [TaskService, BudgetService],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(LoggerMiddleware)
-      .forRoutes('*');
-  }
+    configure(consumer: MiddlewareConsumer) {
+        consumer.apply(LoggerMiddleware).forRoutes('*');
+    }
 }

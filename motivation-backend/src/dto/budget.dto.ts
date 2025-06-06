@@ -32,4 +32,4 @@ export class BudgetResponseDto {
 
     @ApiProperty({ type: [HistoryEntryResponseDto] })
     history: HistoryEntryResponseDto[];
-} 
+}
