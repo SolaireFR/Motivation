@@ -12,26 +12,33 @@ services:
     restart: unless-stopped
 
   motivation-backend:
-    image: git.iesi.sarl/development/iesi-backend-api-atelier:latest
+    image: ghcr.io/solairefr/motivation-backend:latest
     container_name: motivation-backend
-    hostname: backend-ecran
     restart: unless-stopped
     ports:
-      - 7005:4000
+      - 3000:3000
     environment:
-      - TZ=Europe/Paris
-      - MONGODB_URI=${DATABASE_URL}
-      - API_KEYS=${API_KEY}
+      PORT: ${PORT}
+      NODE_ENV: ${NODE_ENV}
+      MONGODB_HOST: ${MONGODB_HOST}
+      MONGODB_PORT: ${MONGODB_PORT}
+      MONGODB_USER: ${MONGODB_USER}
+      MONGODB_PASSWORD: ${MONGODB_PASSWORD}
+      MONGODB_DATABASE: ${MONGODB_DATABASE}
+      MONGODB_URI: ${MONGODB_URI}
+      SWAGGER_TITLE: ${SWAGGER_TITLE}
+      SWAGGER_DESCRIPTION: ${SWAGGER_DESCRIPTION}
+      SWAGGER_VERSION: ${SWAGGER_VERSION}
+      SWAGGER_PATH: ${SWAGGER_PATH}
 
   motivation-frontend:
-    image: git.iesi.sarl/development/apollo-atelier:latest
+    image: ghcr.io/solairefr/motivation-frontend:latest
     container_name: motivation-frontend
-    hostname: frontend-ecran
     restart: unless-stopped
     ports:
-      - 7004:80
+      - 4200:80
     depends_on:
-      - backend-ecran
+      - motivation-backend
 
 volumes:
   mongodb_data: 
