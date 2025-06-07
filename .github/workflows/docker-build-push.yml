@@ -27,12 +27,10 @@ jobs:
 
       - name: Build and push FRONT image
         run: |
-          cd /motivation-frontend
-          docker build -t ghcr.io/solairefr/motivation-frontend:latest .
+          docker build -t ghcr.io/solairefr/motivation-frontend:latest ./motivation-frontend
           docker push ghcr.io/solairefr/motivation-frontend:latest
 
       - name: Build and push BACK image
         run: |
-          cd /motivation-backend
-          docker build -t ghcr.io/solairefr/motivation-backend:latest .
+          docker build -t ghcr.io/solairefr/motivation-backend:latest ./motivation-backend
           docker push ghcr.io/solairefr/motivation-backend:latest
