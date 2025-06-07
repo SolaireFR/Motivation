@@ -1,0 +1,36 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main  # ou ton nom de branche
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push FRONT image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/motivation-front ./front
+          docker push ghcr.io/${{ github.repository_owner }}/motivation-front
+
+      - name: Build and push BACK image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/motivation-back ./back
+          docker push ghcr.io/${{ github.repository_owner }}/motivation-back

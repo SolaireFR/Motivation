@@ -1,0 +1,37 @@
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "${MONGODB_PORT}:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGODB_DATABASE}
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+  motivation-backend:
+    image: git.iesi.sarl/development/iesi-backend-api-atelier:latest
+    container_name: motivation-backend
+    hostname: backend-ecran
+    restart: unless-stopped
+    ports:
+      - 7005:4000
+    environment:
+      - TZ=Europe/Paris
+      - MONGODB_URI=${DATABASE_URL}
+      - API_KEYS=${API_KEY}
+
+  motivation-frontend:
+    image: git.iesi.sarl/development/apollo-atelier:latest
+    container_name: motivation-frontend
+    hostname: frontend-ecran
+    restart: unless-stopped
+    ports:
+      - 7004:80
+    depends_on:
+      - backend-ecran
+
+volumes:
+  mongodb_data: 
