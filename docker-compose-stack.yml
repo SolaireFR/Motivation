@@ -10,6 +10,8 @@ services:
     volumes:
       - mongodb_data:/data/db
     restart: unless-stopped
+    networks:
+      - backend
 
   motivation-backend:
     image: ghcr.io/solairefr/motivation-backend:latest
@@ -30,6 +32,8 @@ services:
       SWAGGER_DESCRIPTION: ${SWAGGER_DESCRIPTION}
       SWAGGER_VERSION: ${SWAGGER_VERSION}
       SWAGGER_PATH: ${SWAGGER_PATH}
+    networks:
+      - backend
 
   motivation-frontend:
     image: ghcr.io/solairefr/motivation-frontend:latest
@@ -39,6 +43,16 @@ services:
       - 4200:80
     depends_on:
       - motivation-backend
+    networks:
+      - frontend
 
 volumes:
-  mongodb_data: 
+  mongodb_data:
+
+networks:
+    backend:
+        name: backend
+        external: true
+    frontend:
+        name: frontend
+        external: true
