@@ -7,8 +7,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { Budget } from '../../models/budget.model';
-import { BudgetService } from '../../services/budget.service';
+// import { Budget } from '../../models/budget.model';
+// import { BudgetService } from '../../services/budget.service';
 import { Icons, ButtonTexts } from '../../shared/ui-constants';
 import { ButtonModule } from 'primeng/button';
 import { FloatLabelModule } from 'primeng/floatlabel';
@@ -63,87 +63,87 @@ import { FloatLabelModule } from 'primeng/floatlabel';
         }
     `]
 })
-export class BudgetComponent implements OnInit {
-    icons = Icons;
-    texts = ButtonTexts;
-    budget: Budget | null = null;
-    entryDialog = false;
-    currentEntry: { title: string; amount: number } = {
-        title: '',
-        amount: 0
-    };
+export class BudgetComponent {
+    // icons = Icons;
+    // texts = ButtonTexts;
+    // budget: Budget | null = null;
+    // entryDialog = false;
+    // currentEntry: { title: string; amount: number } = {
+    //     title: '',
+    //     amount: 0
+    // };
 
-    constructor(
-        private budgetService: BudgetService,
-        private messageService: MessageService
-    ) {}
+    // constructor(
+    //     private budgetService: BudgetService,
+    //     private messageService: MessageService
+    // ) {}
 
-    ngOnInit() {
-        this.loadBudget();
-    }
+    // ngOnInit() {
+    //     this.loadBudget();
+    // }
 
-    loadBudget() {
-        this.budgetService.getBudget().subscribe(budget => {
-            this.budget = budget;
-        });
-    }
+    // loadBudget() {
+    //     this.budgetService.getBudget().subscribe(budget => {
+    //         this.budget = budget;
+    //     });
+    // }
 
-    showNewEntryDialog() {
-        this.currentEntry = {
-            title: '',
-            amount: 0
-        };
-        this.entryDialog = true;
-    }
+    // showNewEntryDialog() {
+    //     this.currentEntry = {
+    //         title: '',
+    //         amount: 0
+    //     };
+    //     this.entryDialog = true;
+    // }
 
-    hideDialog() {
-        this.entryDialog = false;
-        this.currentEntry = {
-            title: '',
-            amount: 0
-        };
-    }
+    // hideDialog() {
+    //     this.entryDialog = false;
+    //     this.currentEntry = {
+    //         title: '',
+    //         amount: 0
+    //     };
+    // }
 
-    saveEntry() {
-        if (!this.currentEntry.title || !this.currentEntry.amount) {
-            this.messageService.add({
-                severity: 'error',
-                summary: 'Erreur',
-                detail: 'Veuillez remplir tous les champs'
-            });
-            return;
-        }
+    // saveEntry() {
+    //     if (!this.currentEntry.title || !this.currentEntry.amount) {
+    //         this.messageService.add({
+    //             severity: 'error',
+    //             summary: 'Erreur',
+    //             detail: 'Veuillez remplir tous les champs'
+    //         });
+    //         return;
+    //     }
 
-        if (this.currentEntry.amount >= 0) {
-            this.messageService.add({
-                severity: 'error',
-                summary: 'Erreur',
-                detail: 'Le montant doit être négatif pour une récompense'
-            });
-            return;
-        }
+    //     if (this.currentEntry.amount >= 0) {
+    //         this.messageService.add({
+    //             severity: 'error',
+    //             summary: 'Erreur',
+    //             detail: 'Le montant doit être négatif pour une récompense'
+    //         });
+    //         return;
+    //     }
 
-        this.budgetService.addHistoryEntry(
-            this.currentEntry.title,
-            this.currentEntry.amount
-        ).subscribe({
-            next: () => {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Succès',
-                    detail: 'Entrée ajoutée'
-                });
-                this.loadBudget();
-                this.hideDialog();
-            },
-            error: (error) => {
-                console.error('Erreur lors de l\'ajout de l\'entrée:', error);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Erreur',
-                    detail: 'Erreur lors de l\'ajout de l\'entrée'
-                });
-            }
-        });
-    }
+    //     this.budgetService.addHistoryEntry(
+    //         this.currentEntry.title,
+    //         this.currentEntry.amount
+    //     ).subscribe({
+    //         next: () => {
+    //             this.messageService.add({
+    //                 severity: 'success',
+    //                 summary: 'Succès',
+    //                 detail: 'Entrée ajoutée'
+    //             });
+    //             this.loadBudget();
+    //             this.hideDialog();
+    //         },
+    //         error: (error) => {
+    //             console.error('Erreur lors de l\'ajout de l\'entrée:', error);
+    //             this.messageService.add({
+    //                 severity: 'error',
+    //                 summary: 'Erreur',
+    //                 detail: 'Erreur lors de l\'ajout de l\'entrée'
+    //             });
+    //         }
+    //     });
+    // }
 } 

@@ -1,0 +1,43 @@
+<div class="overflow-y-auto h-full">
+    <div class="flex justify-center m-auto">
+        <span>En cours</span>
+    </div>
+    <p-divider />
+
+    @for (transaction of waitingTransactions$(); let i = $index; track transaction._id) {
+        <div class="flex gap-4 w-full">
+            <div style="width: 60%;">
+                {{ transaction.title }}
+            </div>
+            <div style="width: 20%;">
+                {{ transaction.sum }}€
+            </div>
+            <div style="width: 20%;">
+                <p-menu #menu [model]="waitingTransactionItems" [popup]="true" appendTo="body" (onShow)="selectTransaction(transaction)" (onHide)="selectTransaction(undefined)" />
+                <p-button (click)="menu.toggle($event)" label="⋮" outlined="true" />
+            </div>
+        </div>
+    }
+
+    <div class="flex justify-center m-auto">
+        <span>Compléter</span>
+    </div>
+    <p-divider />
+
+    @for (transaction of completedTransactions$(); let i = $index; track transaction._id) {
+        <div class="flex gap-4 w-full">
+            <div style="width: 60%;" class="opacity-50">
+                {{ transaction.title }}
+            </div>
+            <div style="width: 20%;" class="opacity-50">
+                {{ transaction.sum }}€
+            </div>
+            <div style="width: 20%;">
+                <p-menu #menuRef [model]="completedTransactionItems" [popup]="true" appendTo="body" />
+                <p-button (click)="menuRef.toggle($event)" label="⋮" outlined="true" />
+            </div>
+        </div>
+    }
+</div>
+
+<app-form-transaction [(visible)]="editVisible" [transaction]="selectedTransaction" />
