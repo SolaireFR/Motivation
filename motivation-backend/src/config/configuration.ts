@@ -5,10 +5,10 @@ export default () => ({
     mongodb: {
         host: process.env.MONGODB_HOST || 'localhost',
         port: parseInt(process.env.MONGODB_PORT || '27017', 10),
-        user: process.env.MONGODB_USER || 'admin',
-        password: process.env.MONGODB_PASSWORD || 'password',
-        database: process.env.MONGODB_DATABASE || 'motivation',
-        uri: process.env.MONGODB_URI || 'mongodb://admin:password@localhost:27017/motivation?authSource=admin',
+        user: process.env.MONGODB_USER,
+        password: process.env.MONGODB_PASSWORD,
+        database: process.env.MONGODB_DATABASE,
+        uri: process.env.MONGODB_URI,
     },
 
     swagger: {

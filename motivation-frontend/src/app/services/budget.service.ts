@@ -13,6 +13,7 @@ export class BudgetService {
     constructor(private http: HttpClient) {}
 
     getBudget(): Observable<Budget> {
+        console.log('Fetching budget from:', this.apiUrl);
         return this.http.get<Budget>(this.apiUrl);
     }
 

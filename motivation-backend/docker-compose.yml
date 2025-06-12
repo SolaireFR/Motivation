@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mongodb:
     image: mongo:latest
@@ -10,8 +8,8 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
       - MONGO_INITDB_DATABASE=${MONGODB_DATABASE}
     volumes:
-      - mongodb_data:/data/db
+      - mongodb_data_dev:/data/db
     restart: unless-stopped
 
 volumes:
-  mongodb_data: 
+  mongodb_data_dev:
