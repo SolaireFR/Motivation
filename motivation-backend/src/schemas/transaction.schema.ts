@@ -26,7 +26,7 @@ export class Transaction {
     type: TransactionType;
 
     @Expose()
-    @Prop()
+    @Prop({ type: Date, default: null })
     completedAt?: Date;
 }
 

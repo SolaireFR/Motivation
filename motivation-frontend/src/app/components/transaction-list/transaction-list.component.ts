@@ -6,8 +6,8 @@ import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { DividerModule } from 'primeng/divider';
-import { MenuItem } from 'primeng/api';
 import { FormTransactionComponent } from "../form-transaction/form-transaction.component";
+import { CreateTransactionDto, UpdateTransactionDto } from '../../dtos/transaction.dto';
 
 @Component({
     standalone: true,
@@ -26,46 +26,57 @@ export class TransactionListComponent {
     completedTransactions$: Signal<Transaction[]>;
 
     editVisible: boolean = false;
-    selectedTransaction: Transaction | undefined;
+    _selectedTransaction: Transaction | undefined;
+
+    set selectedTransaction(value: Transaction | undefined) {
+        if (value !== undefined || this.editVisible === false) {
+            this._selectedTransaction = value;
+        }
+    }
+
+    get selectedTransaction(): Transaction | undefined {
+        return this._selectedTransaction;
+    }
 
     waitingTransactionItems = [
-            {
-                label: 'Options',
-                items: [
-                    {
-                        label: '✅ Valider',
-                        command: () => this.completeTransaction(this.selectedTransaction)
-                    },
-                    {
-                        label: '✏️ Modifier',
-                        command: () => this.editTransaction(this.selectedTransaction)
-                    },
-                    {
-                        label: '❌ Supprimer',
-                        command: () => this.deleteTransaction(this.selectedTransaction)
-                    }
-                ]
-            }
-        ];
+        {
+            label: 'Options',
+            items: [
+                {
+                    label: '✅ Valider',
+                    command: () => this.completeTransaction(this.selectedTransaction)
+                },
+                {
+                    label: '✏️ Modifier',
+                    command: () => this.editTransaction(this.selectedTransaction)
+                },
+                {
+                    label: '❌ Supprimer',
+                    command: () => this.deleteTransaction(this.selectedTransaction)
+                }
+            ]
+        }
+    ];
 
     completedTransactionItems = [
-            {
-                label: 'Actions',
-                items: [
-                    {
-                        label: '🔄 Dupliquer',
-                        icon: 'pi pi-copy',
-                        command: () => this.duplicateTransaction(this.selectedTransaction)
-                    },
-                    {
-                        label: '❌ Supprimer',
-                        icon: 'pi pi-trash',
-                        command: () => this.deleteTransaction(this.selectedTransaction)
-                    }
-                ]
-            }];
+        {
+            label: 'Actions',
+            items: [
+                {
+                    label: '🔄 Dupliquer',
+                    icon: 'pi pi-copy',
+                    command: () => this.duplicateTransaction(this.selectedTransaction)
+                },
+                {
+                    label: '❌ Supprimer',
+                    icon: 'pi pi-trash',
+                    command: () => this.deleteTransaction(this.selectedTransaction)
+                }
+            ]
+        }];
 
-
+    rewardFullSum$: Signal<number>; 
+    
     constructor(private readonly transactionService: TransactionService) {
         this.waitingTransactions$ = computed(() => {
             return this.transactionService.transactions$()
@@ -76,10 +87,19 @@ export class TransactionListComponent {
                 .filter(transaction => transaction.type === this.type && transaction.completedAt != null)
                 .sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime());
         });
+        this.rewardFullSum$ = computed(() => {
+            const loses = this.transactionService.transactions$()
+                .filter(transaction => transaction.type === TransactionType.REWARD && transaction.completedAt !== null)
+                .reduce((sum, transaction) => sum + transaction.sum, 0);
+            const gains = this.transactionService.transactions$()
+                .filter(transaction => transaction.type === TransactionType.TASK && transaction.completedAt !== null)
+                .reduce((sum, transaction) => sum + transaction.sum, 0);
+
+            return gains + loses;
+        });
     }
 
     selectTransaction(transaction: Transaction | undefined): void {
-        console.log('Selected transaction: ', transaction);
         this.selectedTransaction = transaction;
     }
 
@@ -89,9 +109,16 @@ export class TransactionListComponent {
             return;
         }
 
-        const now = new Date();
-        const formattedDate = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
-        console.log('Completing transaction: ' + transaction._id + ' at ' + formattedDate);
+        const dto = new UpdateTransactionDto({ completedAt: new Date() });
+        this.transactionService.updateTransaction(transaction._id, dto).subscribe({
+            next: () => {
+                this.selectedTransaction = undefined; // Reset selected transaction after completion
+            },
+            error: (error) => {
+                console.error('Error completing transaction:', error);
+            }
+        });
+
     }
 
     duplicateTransaction(transaction: Transaction | undefined): void {
@@ -100,8 +127,19 @@ export class TransactionListComponent {
             return;
         }
 
-        console.log('Duplicating transaction: ', transaction);
-        // this.transactionService.duplicateTransaction(transaction);
+        const dto = new CreateTransactionDto({
+            title: transaction.title,
+            sum: transaction.sum,
+            type: transaction.type,
+        });
+        this.transactionService.createTransaction(dto).subscribe({
+            next: () => {
+                this.selectedTransaction = undefined; // Reset selected transaction after duplication
+            },
+            error: (error) => {
+                console.error('Error duplicating transaction:', error);
+            }
+        });
     }
 
     editTransaction(transaction: Transaction | undefined): void {
@@ -110,7 +148,18 @@ export class TransactionListComponent {
     }
 
     deleteTransaction(transaction: Transaction | undefined): void {
-        console.log('Deleting transaction: ', transaction);
-        // this.transactionService.deleteTransaction(transaction);
+        if (!transaction) {
+            console.error('Transaction is undefined');
+            return;
+        }
+
+        this.transactionService.deleteTransaction(transaction._id).subscribe({
+            next: () => {
+                this.selectedTransaction = undefined; // Reset selected transaction after deletion
+            },
+            error: (error) => {
+                console.error('Error deleting transaction:', error);
+            }
+        });
     }
 }

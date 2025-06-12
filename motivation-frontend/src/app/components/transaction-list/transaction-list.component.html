@@ -1,10 +1,16 @@
 <div class="overflow-y-auto h-full">
-    <div class="flex justify-center m-auto">
-        <span>En cours</span>
+    <div class="flex justify-center m-auto font-bold">
+        <span>Budget : {{rewardFullSum$()}}€</span>
     </div>
     <p-divider />
 
-    @for (transaction of waitingTransactions$(); let i = $index; track transaction._id) {
+    <div class="flex justify-center m-auto gap-2">
+        <span>En cours</span>
+        <p-button (click)="editTransaction(undefined)" label="➕" outlined="true" />
+    </div>
+    <p-divider />
+
+    @for (transaction of waitingTransactions$(); track transaction._id) {
         <div class="flex gap-4 w-full">
             <div style="width: 60%;">
                 {{ transaction.title }}
@@ -24,7 +30,7 @@
     </div>
     <p-divider />
 
-    @for (transaction of completedTransactions$(); let i = $index; track transaction._id) {
+    @for (transaction of completedTransactions$(); track transaction._id) {
         <div class="flex gap-4 w-full">
             <div style="width: 60%;" class="opacity-50">
                 {{ transaction.title }}
@@ -33,8 +39,8 @@
                 {{ transaction.sum }}€
             </div>
             <div style="width: 20%;">
-                <p-menu #menuRef [model]="completedTransactionItems" [popup]="true" appendTo="body" />
-                <p-button (click)="menuRef.toggle($event)" label="⋮" outlined="true" />
+                <p-menu #menu [model]="completedTransactionItems" [popup]="true" appendTo="body" (onShow)="selectTransaction(transaction)" (onHide)="selectTransaction(undefined)" />
+                <p-button (click)="menu.toggle($event)" label="⋮" outlined="true" />
             </div>
         </div>
     }

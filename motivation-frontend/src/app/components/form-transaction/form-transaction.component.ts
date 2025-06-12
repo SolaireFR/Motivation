@@ -72,7 +72,14 @@ export class FormTransactionComponent {
             const selectedTransaction = this.transaction;
             if (selectedTransaction) {
                 const dto = new UpdateTransactionDto(this.form.value);
-                this.transactionService.updateTransaction(selectedTransaction._id, dto).subscribe();
+                this.transactionService.updateTransaction(selectedTransaction._id, dto).subscribe({
+                    next: () => {
+                        this.close();
+                    },
+                    error: (error) => {
+                        console.error('Error updating transaction:', error);
+                    }
+                });
             } else {
                 const dto = new CreateTransactionDto(this.form.value);
                 this.transactionService.createTransaction(dto).subscribe();
