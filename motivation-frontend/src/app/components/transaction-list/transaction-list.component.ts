@@ -8,6 +8,7 @@ import { MenuModule } from 'primeng/menu';
 import { DividerModule } from 'primeng/divider';
 import { FormTransactionComponent } from "../form-transaction/form-transaction.component";
 import { CreateTransactionDto, UpdateTransactionDto } from '../../dtos/transaction.dto';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 @Component({
     standalone: true,
@@ -77,7 +78,11 @@ export class TransactionListComponent {
 
     rewardFullSum$: Signal<number>; 
     
-    constructor(private readonly transactionService: TransactionService) {
+    constructor(
+        private readonly transactionService: TransactionService,
+        private readonly confirmService: ConfirmationService,
+        private readonly messageService: MessageService,
+    ) {
         this.waitingTransactions$ = computed(() => {
             return this.transactionService.transactions$()
                 .filter(transaction => transaction.type === this.type && transaction.completedAt === null)
@@ -94,7 +99,6 @@ export class TransactionListComponent {
             const gains = this.transactionService.transactions$()
                 .filter(transaction => transaction.type === TransactionType.TASK && transaction.completedAt !== null)
                 .reduce((sum, transaction) => sum + transaction.sum, 0);
-
             return gains + loses;
         });
     }
@@ -106,24 +110,58 @@ export class TransactionListComponent {
     completeTransaction(transaction: Transaction | undefined): void {
         if (!transaction) {
             console.error('Transaction is undefined');
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Erreur',
+                detail: 'Aucune transaction n\'est sélectionnée pour la validation.',
+            });
             return;
         }
 
+        this.confirmService.confirm({
+            message: `Êtes-vous sûr de vouloir valider la "${transaction.type}" ?`,
+            header: 'Confirmation',
+            acceptLabel: 'Oui',
+            rejectLabel: 'Non',
+            accept: () => {
+                this.acceptCompleteTransaction(transaction);
+            },
+            reject: () => {
+                this.selectedTransaction = undefined;
+            }
+        });
+    }
+
+    private acceptCompleteTransaction(transaction: Transaction): void {
         const dto = new UpdateTransactionDto({ completedAt: new Date() });
         this.transactionService.updateTransaction(transaction._id, dto).subscribe({
             next: () => {
                 this.selectedTransaction = undefined; // Reset selected transaction after completion
+                this.messageService.add({
+                    severity: 'success',
+                    summary: transaction.type + ' complétée',
+                    detail: `La "${transaction.type}" a été validée avec succès.`,
+                });
             },
             error: (error) => {
                 console.error('Error completing transaction:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erreur',
+                    detail: `Une erreur est survenue lors de la validation de la "${transaction.type}".`,
+                });
             }
         });
-
     }
 
     duplicateTransaction(transaction: Transaction | undefined): void {
         if (!transaction) {
             console.error('Transaction is undefined');
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Erreur',
+                detail: 'Aucune transaction n\'est sélectionnée pour la duplication.',
+            });
             return;
         }
 
@@ -135,9 +173,19 @@ export class TransactionListComponent {
         this.transactionService.createTransaction(dto).subscribe({
             next: () => {
                 this.selectedTransaction = undefined; // Reset selected transaction after duplication
+                this.messageService.add({
+                    severity: 'success',
+                    summary: transaction.type + ' dupliquée',
+                    detail: `La "${transaction.type}" a été dupliquée avec succès.`,
+                });
             },
             error: (error) => {
                 console.error('Error duplicating transaction:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erreur',
+                    detail: `Une erreur est survenue lors de la duplication de la "${transaction.type}".`,
+                });
             }
         });
     }
@@ -150,15 +198,45 @@ export class TransactionListComponent {
     deleteTransaction(transaction: Transaction | undefined): void {
         if (!transaction) {
             console.error('Transaction is undefined');
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Erreur',
+                detail: 'Aucune transaction n\'est sélectionnée pour la suppression.',
+            });
             return;
         }
 
+        this.confirmService.confirm({
+            message: `Êtes-vous sûr de vouloir supprimer la "${transaction.type}" ?`,
+            header: 'Confirmation',
+            acceptLabel: 'Oui',
+            rejectLabel: 'Non',
+            accept: () => {
+                this.acceptDeleteTransaction(transaction);
+            },
+            reject: () => {
+                this.selectedTransaction = undefined;
+            }
+        });
+    }
+
+    acceptDeleteTransaction(transaction: Transaction): void {
         this.transactionService.deleteTransaction(transaction._id).subscribe({
             next: () => {
                 this.selectedTransaction = undefined; // Reset selected transaction after deletion
+                this.messageService.add({
+                    severity: 'success',
+                    summary: transaction.type + ' supprimée',
+                    detail: `La "${transaction.type}" a été supprimée avec succès.`,
+                });
             },
             error: (error) => {
                 console.error('Error deleting transaction:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Erreur',
+                    detail: `Une erreur est survenue lors de la suppression de la "${transaction.type}".`,
+                });
             }
         });
     }

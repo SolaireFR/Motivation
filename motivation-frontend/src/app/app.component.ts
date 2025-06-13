@@ -4,6 +4,8 @@ import { TransactionService } from './services/transaction.service';
 import { TabsModule } from 'primeng/tabs';
 import { TransactionListComponent } from "./components/transaction-list/transaction-list.component";
 import { TransactionType } from './models/transaction-type.enum';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 
 
@@ -13,7 +15,9 @@ import { TransactionType } from './models/transaction-type.enum';
     imports: [
         CommonModule,
         TabsModule,
-        TransactionListComponent
+        TransactionListComponent,
+        ToastModule,
+        ConfirmDialogModule
     ],
     template: `
         <div class="container mx-auto p-4 h-screen w-screen flex flex-col">
@@ -36,6 +40,9 @@ import { TransactionType } from './models/transaction-type.enum';
                 </p-tabpanels>
             </p-tabs>
         </div>
+
+        <p-toast />
+        <p-confirmdialog />
     `,
 })
 export class AppComponent {

@@ -10,6 +10,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 @Component({
     selector: 'app-form-transaction',
@@ -48,7 +49,10 @@ export class FormTransactionComponent {
         value: type
     }));
     
-    constructor(private readonly transactionService: TransactionService) {
+    constructor(
+        private readonly transactionService: TransactionService,
+        private readonly messageService: MessageService,
+    ) {
         this.initializeForm();
     }
 
@@ -75,14 +79,41 @@ export class FormTransactionComponent {
                 this.transactionService.updateTransaction(selectedTransaction._id, dto).subscribe({
                     next: () => {
                         this.close();
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: selectedTransaction.type + ' modifiée',
+                            detail: `La "${selectedTransaction.type}" a été modifiée avec succès.`,
+                        });
                     },
                     error: (error) => {
                         console.error('Error updating transaction:', error);
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Erreur lors de la modification de la ' + selectedTransaction.type,
+                            detail: error.message || 'Une erreur est survenue.'
+                        });
                     }
                 });
             } else {
                 const dto = new CreateTransactionDto(this.form.value);
-                this.transactionService.createTransaction(dto).subscribe();
+                this.transactionService.createTransaction(dto).subscribe({
+                    next: () => {
+                        this.close();
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: dto.type + ' créée',
+                            detail: `La "${dto.type}" a été créée avec succès.`,
+                        });
+                    },
+                    error: (error) => {
+                        console.error('Error creating transaction:', error);
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Erreur lors de la création de la ' + dto.type,
+                            detail: error.message || 'Une erreur est survenue.'
+                        });
+                    }
+                });
             }
         }
     }

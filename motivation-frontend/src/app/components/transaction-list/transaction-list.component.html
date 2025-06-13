@@ -1,14 +1,16 @@
 <div class="overflow-y-auto h-full">
-    <div class="flex justify-center m-auto font-bold">
+    <div class="flex justify-center m-auto font-bold gap-2">
         <span>Budget : {{rewardFullSum$()}}€</span>
-    </div>
-    <p-divider />
-
-    <div class="flex justify-center m-auto gap-2">
-        <span>En cours</span>
         <p-button (click)="editTransaction(undefined)" label="➕" outlined="true" />
     </div>
     <p-divider />
+
+    @if (waitingTransactions$().length > 0) {
+        <div class="flex justify-center m-auto">
+            <span>En cours</span>
+        </div>
+        <p-divider />
+    }
 
     @for (transaction of waitingTransactions$(); track transaction._id) {
         <div class="flex gap-4 w-full">
@@ -25,10 +27,12 @@
         </div>
     }
 
-    <div class="flex justify-center m-auto">
-        <span>Compléter</span>
-    </div>
-    <p-divider />
+    @if (completedTransactions$().length > 0) {
+        <div class="flex justify-center m-auto">
+            <span>Compléter</span>
+        </div>
+        <p-divider />
+    }
 
     @for (transaction of completedTransactions$(); track transaction._id) {
         <div class="flex gap-4 w-full">
