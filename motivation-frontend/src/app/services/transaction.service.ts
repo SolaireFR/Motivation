@@ -12,11 +12,20 @@ import { Observable, tap } from 'rxjs';
 export class TransactionService {
     private readonly apiUrl = `${environment.apiUrl}/transactions`;
     private readonly _transactions$: WritableSignal<Transaction[]> = signal([]);
+    private readonly _selectedTransaction$: WritableSignal<Transaction | undefined> = signal(undefined);
 
     constructor(private readonly http: HttpClient) {}
 
     get transactions$(): Signal<Transaction[]> {
         return computed(() => this._transactions$());
+    }
+
+    get selectedTransaction$(): Signal<Transaction | undefined> {
+        return computed(() => this._selectedTransaction$());
+    }
+
+    set selectedTransaction(transaction: Transaction | undefined) {
+        this._selectedTransaction$.set(transaction);
     }
 
     loadTransactions(): void {

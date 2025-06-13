@@ -1,4 +1,4 @@
-import { Component, computed, EventEmitter, Input, Output, Signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Transaction } from '../../models/transaction.model';
@@ -10,7 +10,7 @@ import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 
 @Component({
     selector: 'app-form-transaction',
@@ -19,28 +19,10 @@ import { ConfirmationService, MessageService } from 'primeng/api';
     templateUrl: './form-transaction.component.html',
 })
 export class FormTransactionComponent {
-    private _visible: boolean = false;
+    @Input() index: number = 0;
+    @Output() indexChange = new EventEmitter<number>();
 
-    @Input()
-    get visible(): boolean {
-        return this._visible;
-    }
-    set visible(value: boolean) {
-        this._visible = value;
-        this.visibleChange.emit(this._visible);
-    }
-
-    @Output() visibleChange = new EventEmitter<boolean>();
-
-    _transaction: Transaction | undefined;
-    @Input()
-    set transaction(value: Transaction | undefined) {
-        this._transaction = value;
-        this.initializeForm(value);
-    }
-    get transaction(): Transaction | undefined {
-        return this._transaction;
-    }
+    transactionSelected$: Signal<Transaction | undefined>;
 
     form: FormGroup;
 
@@ -53,10 +35,12 @@ export class FormTransactionComponent {
         private readonly transactionService: TransactionService,
         private readonly messageService: MessageService,
     ) {
+        this.transactionSelected$ = this.transactionService.selectedTransaction$;
         this.initializeForm();
     }
 
-    private initializeForm(transaction?: Transaction) {
+    private initializeForm() {
+        const transaction = this.transactionSelected$();
         if (!transaction) {
             this.form = new FormGroup({
                 title: new FormControl(''),
@@ -73,7 +57,7 @@ export class FormTransactionComponent {
 
     submit() {
         if (this.form.valid) {
-            const selectedTransaction = this.transaction;
+            const selectedTransaction = this.transactionSelected$();
             if (selectedTransaction) {
                 const dto = new UpdateTransactionDto(this.form.value);
                 this.transactionService.updateTransaction(selectedTransaction._id, dto).subscribe({
@@ -119,11 +103,12 @@ export class FormTransactionComponent {
     }
 
     close(): void {
-        this.transaction = undefined;
-        this.visible = false;
+        this.transactionService.selectedTransaction = undefined;
+        this.indexChange.emit(0); // Reset to the first tab
     }
 
     reset(): void {
-        this.initializeForm(this.transaction);
+        this.form.reset();
+        this.initializeForm();
     }
 }
