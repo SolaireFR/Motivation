@@ -96,7 +96,9 @@ export class TransactionListComponent {
     }
 
     selectTransaction(transaction: Transaction | undefined): void {
-        this.transactionService.selectedTransaction = transaction;
+        if (this.index !== 2) {
+            this.transactionService.selectedTransaction = transaction;
+        }
     }
 
     completeTransaction(transaction: Transaction | undefined): void {

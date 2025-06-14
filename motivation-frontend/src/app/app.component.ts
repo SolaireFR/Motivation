@@ -22,7 +22,6 @@ import { FormTransactionComponent } from './components/form-transaction/form-tra
         FormTransactionComponent,
     ],
     template: `
-        INDEX {{ index }}
         <div class="container mx-auto p-4 h-screen w-screen flex flex-col">
             <h1 class="text-3xl font-bold mb-4 shrink-0">
                 <img src="logo-motivation-colored-min.png" alt="Logo" class="inline-block h-8 mr-2" />

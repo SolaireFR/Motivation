@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, Signal } from '@angular/core';
+import { Component, computed, EventEmitter, Input, Output, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Transaction } from '../../models/transaction.model';
@@ -19,7 +19,15 @@ import { MessageService } from 'primeng/api';
     templateUrl: './form-transaction.component.html',
 })
 export class FormTransactionComponent {
-    @Input() index: number = 0;
+    private _index: number = 0;
+    @Input()
+    set index(value: number) {
+        this._index = value;
+        if (value !== 2) {
+            this.transactionService.selectedTransaction = undefined;
+            this.initializeForm();
+        }
+    }
     @Output() indexChange = new EventEmitter<number>();
 
     transactionSelected$: Signal<Transaction | undefined>;
@@ -35,12 +43,15 @@ export class FormTransactionComponent {
         private readonly transactionService: TransactionService,
         private readonly messageService: MessageService,
     ) {
-        this.transactionSelected$ = this.transactionService.selectedTransaction$;
+        this.transactionSelected$ = computed(() => {
+            const transaction = this.transactionService.selectedTransaction$();
+            this.initializeForm(transaction);
+            return transaction;
+        });
         this.initializeForm();
     }
 
-    private initializeForm() {
-        const transaction = this.transactionSelected$();
+    private initializeForm(transaction?: Transaction): void {
         if (!transaction) {
             this.form = new FormGroup({
                 title: new FormControl(''),
@@ -62,7 +73,8 @@ export class FormTransactionComponent {
                 const dto = new UpdateTransactionDto(this.form.value);
                 this.transactionService.updateTransaction(selectedTransaction._id, dto).subscribe({
                     next: () => {
-                        this.close();
+                        this.indexChange.emit(selectedTransaction.type === TransactionType.TASK ? 0 : 1);
+                        this.transactionService.selectedTransaction = undefined;
                         this.messageService.add({
                             severity: 'success',
                             summary: selectedTransaction.type + ' modifiée',
@@ -82,7 +94,8 @@ export class FormTransactionComponent {
                 const dto = new CreateTransactionDto(this.form.value);
                 this.transactionService.createTransaction(dto).subscribe({
                     next: () => {
-                        this.close();
+                        this.transactionService.selectedTransaction = undefined;
+                        this.indexChange.emit(dto.type === TransactionType.TASK ? 0 : 1);
                         this.messageService.add({
                             severity: 'success',
                             summary: dto.type + ' créée',
@@ -102,13 +115,8 @@ export class FormTransactionComponent {
         }
     }
 
-    close(): void {
-        this.transactionService.selectedTransaction = undefined;
-        this.indexChange.emit(0); // Reset to the first tab
-    }
-
     reset(): void {
         this.form.reset();
-        this.initializeForm();
+        this.initializeForm(this.transactionSelected$());
     }
 }
