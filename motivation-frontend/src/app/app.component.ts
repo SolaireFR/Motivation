@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TransactionService } from './services/transaction.service';
 import { TabsModule } from 'primeng/tabs';
@@ -7,8 +7,8 @@ import { TransactionType } from './models/transaction-type.enum';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { FormTransactionComponent } from './components/form-transaction/form-transaction.component';
-
-
+import { KEYCLOAK_EVENT_SIGNAL, KeycloakEventType } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
 
 @Component({
     selector: 'app-root',
@@ -55,7 +55,32 @@ export class AppComponent {
     TransactionType = TransactionType;
     index: number = 0;
 
-    constructor(private readonly transactionService: TransactionService) {
+    constructor(
+        private readonly transactionService: TransactionService,
+        private readonly keyclaok: Keycloak,
+    ) {
         this.transactionService.loadTransactions();
+
+        const keycloakSignal = inject(KEYCLOAK_EVENT_SIGNAL);
+
+        effect(() => {
+            const keycloakEvent = keycloakSignal();
+            if (keycloakEvent.type === KeycloakEventType.TokenExpired) {
+                this.keyclaok.updateToken().then(() => {
+                    console.log('Token refreshed successfully');
+                });
+            }
+        });
+    }
+
+    ngOnInit(): void {
+        this.keyclaok
+            .loadUserInfo()
+            .then((userInfo) => {
+                console.log('User info:', userInfo);
+            })
+            .catch(() => {
+                this.keyclaok.login();
+            });
     }
 } 
