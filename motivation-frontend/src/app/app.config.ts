@@ -16,7 +16,9 @@ const provideKeycloakAngular = (): EnvironmentProviders =>
             clientId: environment.keycloakClientId,
         },
         initOptions: {
-            onLoad: 'check-sso',
+            // onLoad: 'check-sso',
+            onLoad: 'login-required',
+            checkLoginIframe: true,
             silentCheckSsoRedirectUri: window.location.origin + '/assets/silent-check-sso.html',
         },
     });
