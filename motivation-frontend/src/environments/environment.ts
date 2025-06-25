@@ -1,7 +1,7 @@
 export const environment = {
     production: true,
-    apiUrl: 'http://motivation-api.universalgate.fr',
-    keycloakUrl: 'http://keycloak.universalgate.fr',
+    apiUrl: 'https://motivation-api.universalgate.fr',
+    keycloakUrl: 'https://keycloak.universalgate.fr',
     keycloakRealm: 'universalgate',
     keycloakClientId: 'motivation-frontend',
 };
