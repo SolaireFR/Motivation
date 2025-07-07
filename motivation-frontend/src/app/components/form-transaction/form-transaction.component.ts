@@ -1,6 +1,6 @@
 import { Component, computed, EventEmitter, Input, Output, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Transaction } from '../../models/transaction.model';
 import { TransactionService } from '../../services/transaction.service';
 import { TransactionType } from '../../models/transaction-type.enum';
@@ -52,18 +52,23 @@ export class FormTransactionComponent {
     }
 
     private initializeForm(transaction?: Transaction): void {
-        if (!transaction) {
-            this.form = new FormGroup({
-                title: new FormControl(''),
-                sum: new FormControl(0),
-                type: new FormControl(TransactionType.TASK),
-            });
-        } else {
-            this.form = new FormGroup({
-                title: new FormControl(transaction.title),
-                sum: new FormControl(transaction.sum),
-            });
-        }
+        const type = transaction ? transaction.type : TransactionType.TASK;
+
+        this.form = new FormGroup({
+            title: new FormControl(transaction ? transaction.title : '', []),
+            sum: new FormControl(
+            transaction ? transaction.sum : 0,
+            [
+                Validators.min(1),
+            ]
+            ),
+            type: new FormControl(type)
+        });
+
+        // Met à jour la validation de sum quand le type change
+        this.form.get('type')?.valueChanges.subscribe((newType) => {
+            this.form.get('sum')?.updateValueAndValidity();
+        });
     }
 
     submit() {
@@ -92,6 +97,12 @@ export class FormTransactionComponent {
                 });
             } else {
                 const dto = new CreateTransactionDto(this.form.value);
+                if (
+                        (dto.type === TransactionType.TASK && dto.sum < 0) ||
+                        (dto.type === TransactionType.REWARD && dto.sum > 0)
+                    ) {
+                    dto.sum = dto.sum * -1;
+                }
                 this.transactionService.createTransaction(dto).subscribe({
                     next: () => {
                         this.transactionService.selectedTransaction = undefined;
@@ -112,6 +123,13 @@ export class FormTransactionComponent {
                     }
                 });
             }
+        }
+        else {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Formulaire invalide',
+                detail: 'Veuillez corriger les erreurs avant de soumettre.',
+            });
         }
     }
 
