@@ -10,6 +10,60 @@ services:
     volumes:
       - mongodb_data_dev:/data/db
     restart: unless-stopped
+    networks:
+      - backend
+
+  keycloak_web:
+    container_name: keycloak_web
+    image: quay.io/keycloak/keycloak:26.2.5
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: ${KC_DB_URL}
+      KC_DB_USERNAME: ${KC_DB_USERNAME}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+
+      KC_HOSTNAME: ${KC_HOSTNAME}
+      KC_HOSTNAME_PORT: 8080
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      
+      KC_LOG_LEVEL: debug
+      KC_METRICS_ENABLED: true
+      KC_HEALTH_ENABLED: true
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    command: start-dev
+    depends_on:
+      - keycloakdb
+    ports:
+      - 8080:8080
+    restart: unless-stopped
+    networks:
+      - frontend
+      - backend
+
+  # --- KEYCLOAK DATABASE --- # 
+  keycloakdb:
+    container_name: keycloakdb
+    image: postgres:17.5
+    volumes:
+      - keycloak_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${KC_DB_NAME}
+      POSTGRES_USER: ${KC_DB_USERNAME}
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD}
+    restart: unless-stopped
+    networks:
+      - backend
 
 volumes:
   mongodb_data_dev:
+  keycloak_data:
+
+networks:
+  backend:
+    name: backend
+    external: true
+  frontend:
+    name: frontend
+    external: true
